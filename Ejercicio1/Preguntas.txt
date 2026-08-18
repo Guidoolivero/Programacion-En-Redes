@@ -1,0 +1,73 @@
+
+1) Sobre qué protocolo binario está montado el protocolo HTTP?
+Está montado sobre TCP (capa de transporte). La conexión TCP se establece después de un handshaking de 3 vías. En HTTPS se agrega la capa de encriptación TLS/SSL encima de TCP.
+
+2) Cuáles son los clientes HTTP y los servidores HTTP más utilizados?
+Clientes: Navegador, CURL y librerías nativas de diversos lenguajes de desarrollo.
+Servidor: Web server (ejemplos mencionados: Apache).
+
+3) Qué verbos admite un comando en el requerimiento HTTP?
+Los métodos/verbos principales son:
+GET → Solo lectura
+POST → Normalmente para actualizar recursos
+PUT → Para crear recursos
+DELETE → Para borrar recursos
+CONNECT (lo usan los proxies)
+
+También se menciona que pueden usarse como verbos para manipulación de recursos remotos en servicios web.
+
+4) Qué contenido lleva el body de un requerimiento HTTP?
+Puede contener datos en cualquier formato, por ejemplo:
+Datos ingresados en campos de un formulario
+Files enviados en un proceso de upload
+(En el ejemplo de envío de formulario se muestran las “Variables de formulario” en el body).
+
+5) Qué diferencia existe entre un URL y un URI?
+URI (Uniform Request Identifier / Uniform Resource Identifier): es el path del recurso (ej. /path_al_recurso/index.html?var1=valor1&var2=valor2, /index.html, /clientes/marta).
+URL: es el conjunto completo que usa el navegador: http://nombreHost.dominioHost:puerto + URI.
+
+El navegador necesita la URL completa primero para consultar la IP por DNS y luego establecer la conexión TCP.
+
+6) Cómo se almacena información relacionada con las respuestas HTTP?
+Principalmente mediante cookies (Set-Cookie en la respuesta). El servidor envía una pequeña pieza de datos en un header de la respuesta; el navegador la guarda y la envía de regreso en las siguientes peticiones al mismo servidor.
+También se usa el cache del navegador (con mecanismos Last-Modified o ETag).
+
+7) Qué significa HTTP sobre conexiones preexistentes?
+
+
+
+
+Se refiere a las conexiones persistentes (mejoras de HTTP/1.1 respecto a 1.0).
+Se pueden realizar múltiples transacciones sobre la misma conexión TCP.
+El cliente puede enviar Connection: keep-alive para pedir que no se corte la conexión.
+Esto permite el HTTP asíncrono (AJAX) y evita abrir/cerrar conexiones para cada recurso.
+También existe Connection: close para pedir el cierre.
+
+
+8) Qué significa Virtual hosting?
+Los servidores WEB que corren sobre HTTP 1.1 pueden atender múltiples dominios en una única IP.
+Se declara el nombre de host en un servidor DNS público.
+El servidor WEB debe configurarse especialmente para atender hosts virtuales.
+En el requerimiento es obligatorio el header Host: hostDeDestino.DominioDeDestino.
+Para pruebas locales se puede editar el archivo hosts del sistema operativo.
+
+9) Qué significa Cache por etag?
+Es el mecanismo de cache que usa un identificativo (ETag) o “finger print” asociado a cada archivo en el servidor.
+El ETag se modifica cada vez que cambia el recurso.
+El cliente envía el header If-None-Match con el ETag que tiene guardado.
+El servidor compara; si no fue modificado responde 304 Not Modified y el navegador usa su cache.
+Es mejor que el método por fechas porque no depende de errores de configuración de reloj entre cliente y servidor.
+10) ¿Por qué el HTTP se considera STATELESS?
+Porque es un protocolo sin estado. Al no haber más conexión (o al finalizar la transacción), cualquier aplicación pierde el estado. Cada requerimiento es independiente; no se mantiene información de sesión en el protocolo en sí (se resuelve con cookies, sessions, etc.).
+11) Qué nueva versión de HTTP se está usando para mejorar la velocidad de la WEB?
+HTTP/2 (funcionando en algunos sitios y navegadores desde 2015).
+Mejoras principales:
+Multiplex de requests sin esperar respuesta
+Frames binarios (no textuales)
+Compactación de headers
+Prioritización programable de elementos
+Multiplex de respuestas (Server Push)
+12) Cómo va a mejorar el comportamiento de una aplicación WEB en ambientes ruidosos o de débil conexión?
+El PDF menciona HTTP/2 y sus mejoras de multiplexado, frames binarios y prioritización, que ayudan a un mejor uso de la conexión.
+(Nota: el documento no detalla explícitamente HTTP/3 o QUIC para entornos de alta pérdida de paquetes; la información disponible se centra en las ventajas de HTTP/2).
+
