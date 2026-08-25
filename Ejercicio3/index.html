@@ -12,39 +12,39 @@
         <fieldset>
             <legend>Entradas simples</legend>
 
-            <label>Nombre:
+            <label>Nombre:<br>
                 <input type="text" name="nombre" placeholder="Escribe tu nombre">
             </label>
 
-            <label>Apellidos:
+            <label>Apellidos:<br>
                 <input type="text" name="apellido" placeholder="Escribe tus apellidos">
             </label>
 
-            <label>Correo electrónico:
+            <label>Correo electrónico:<br>
                 <input type="email" name="email" placeholder="ejemplo@correo.com">
             </label>
 
-            <label>Contraseña:
+            <label>Contraseña:<br>
                 <input type="password" name="password" placeholder="Mínimo 8 caracteres">
             </label>
 
-            <label>Teléfono:
+            <label>Teléfono:<br>
                 <input type="tel" name="telefono" placeholder="123456789">
             </label>
 
-            <label>Edad:
+            <label>Edad:<br>
                 <input type="number" name="edad" min="18" max="99">
             </label>
 
-            <label>Fecha de nacimiento:
+            <label>Fecha de nacimiento:<br>
                 <input type="date" name="fecha">
             </label>
 
-            <label>Página web:
+            <label>Página web:<br>
                 <input type="url" name="web" placeholder="https://example.com">
             </label>
 
-            <label>Comentarios:
+            <label>Comentarios:<br>
                 <textarea name="comentario" placeholder="Escribe aquí tus comentarios..."></textarea>
             </label>
         </fieldset>
@@ -52,7 +52,7 @@
         <fieldset>
             <legend>Entradas de selección</legend>
 
-            <label>País:
+            <label>País:<br>
                 <select name="pais">
                     <option value="">Selecciona una opción</option>
                     <option value="es">España</option>
@@ -62,7 +62,7 @@
                 </select>
             </label>
 
-            <label>Curso:
+            <label>Curso:<br>
                 <select name="curso">
                     <option value="html">HTML</option>
                     <option value="css">CSS</option>
@@ -71,7 +71,7 @@
                 </select>
             </label>
 
-            <label>Nivel:
+            <label>Nivel:<br>
                 <select name="nivel">
                     <option value="basico">Básico</option>
                     <option value="intermedio">Intermedio</option>
@@ -79,50 +79,53 @@
                 </select>
             </label>
 
-            <label>Intereses:</label>
-            <label><input type="checkbox" name="intereses" value="programacion"> Programación</label>
-            <label><input type="checkbox" name="intereses" value="diseno"> Diseño</label>
-            <label><input type="checkbox" name="intereses" value="redes"> Redes</label>
+            <label>Intereses:<br>
+                <label><input type="checkbox" name="intereses" value="programacion"> Programación</label><br>
+                <label><input type="checkbox" name="intereses" value="diseno"> Diseño</label><br>
+                <label><input type="checkbox" name="intereses" value="redes"> Redes</label>
+            </label>
 
-            <label>Género:</label>
-            <label><input type="radio" name="genero" value="hombre"> Hombre</label>
-            <label><input type="radio" name="genero" value="mujer"> Mujer</label>
-            <label><input type="radio" name="genero" value="otro"> Otro</label>
+            <label>Género:<br>
+                <label><input type="radio" name="genero" value="hombre"> Hombre</label><br>
+                <label><input type="radio" name="genero" value="mujer"> Mujer</label><br>
+                <label><input type="radio" name="genero" value="otro"> Otro</label>
+            </label>
         </fieldset>
 
         <fieldset>
             <legend>Entradas con validación</legend>
 
-            <label>Correo válido:
+            <label>Correo válido:<br>
                 <input type="email" name="valid-email" required>
             </label>
 
-            <label>Edad requerida (18-99):
+            <label>Edad requerida (18-99):<br>
                 <input type="number" name="valid-edad" min="18" max="99" required>
             </label>
 
-            <label>Contraseña con mínimo 8 caracteres:
+            <label>Contraseña con mínimo 8 caracteres:<br>
                 <input type="password" name="valid-password" minlength="8" required>
             </label>
 
-            <label>Teléfono con patrón 9 dígitos:
+            <label>Teléfono con patrón 9 dígitos:<br>
                 <input type="tel" name="valid-tel" pattern="[0-9]{9}" required>
             </label>
 
-            <label>URL válida:
+            <label>URL válida:<br>
                 <input type="url" name="valid-url" required>
             </label>
 
-            <label>Fecha de inicio:
+            <label>Fecha de inicio:<br>
                 <input type="date" name="valid-fecha" required>
             </label>
 
-            <label>Subir archivo:
+            <label>Subir archivo:<br>
                 <input type="file" name="archivo" accept=".pdf,.jpg,.png">
             </label>
         </fieldset>
 
         <button type="submit">Enviar formulario</button>
+        <button type="reset">Restablecer formulario</button>
     </form>
 </body>
 
