@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formularios</title>
+</head>
+<body>
+    <h1>Formulario completo</h1>
+
+    <form action="gracias.html" method="post">
+        <fieldset>
+            <legend>Entradas simples</legend>
+
+            <label>Nombre:
+                <input type="text" name="nombre" placeholder="Escribe tu nombre">
+            </label>
+
+            <label>Apellidos:
+                <input type="text" name="apellido" placeholder="Escribe tus apellidos">
+            </label>
+
+            <label>Correo electrónico:
+                <input type="email" name="email" placeholder="ejemplo@correo.com">
+            </label>
+
+            <label>Contraseña:
+                <input type="password" name="password" placeholder="Mínimo 8 caracteres">
+            </label>
+
+            <label>Teléfono:
+                <input type="tel" name="telefono" placeholder="123456789">
+            </label>
+
+            <label>Edad:
+                <input type="number" name="edad" min="18" max="99">
+            </label>
+
+            <label>Fecha de nacimiento:
+                <input type="date" name="fecha">
+            </label>
+
+            <label>Página web:
+                <input type="url" name="web" placeholder="https://example.com">
+            </label>
+
+            <label>Comentarios:
+                <textarea name="comentario" placeholder="Escribe aquí tus comentarios..."></textarea>
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Entradas de selección</legend>
+
+            <label>País:
+                <select name="pais">
+                    <option value="">Selecciona una opción</option>
+                    <option value="es">España</option>
+                    <option value="mx">México</option>
+                    <option value="ar">Argentina</option>
+                    <option value="co">Colombia</option>
+                </select>
+            </label>
+
+            <label>Curso:
+                <select name="curso">
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="php">PHP</option>
+                </select>
+            </label>
+
+            <label>Nivel:
+                <select name="nivel">
+                    <option value="basico">Básico</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                </select>
+            </label>
+
+            <label>Intereses:</label>
+            <label><input type="checkbox" name="intereses" value="programacion"> Programación</label>
+            <label><input type="checkbox" name="intereses" value="diseno"> Diseño</label>
+            <label><input type="checkbox" name="intereses" value="redes"> Redes</label>
+
+            <label>Género:</label>
+            <label><input type="radio" name="genero" value="hombre"> Hombre</label>
+            <label><input type="radio" name="genero" value="mujer"> Mujer</label>
+            <label><input type="radio" name="genero" value="otro"> Otro</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Entradas con validación</legend>
+
+            <label>Correo válido:
+                <input type="email" name="valid-email" required>
+            </label>
+
+            <label>Edad requerida (18-99):
+                <input type="number" name="valid-edad" min="18" max="99" required>
+            </label>
+
+            <label>Contraseña con mínimo 8 caracteres:
+                <input type="password" name="valid-password" minlength="8" required>
+            </label>
+
+            <label>Teléfono con patrón 9 dígitos:
+                <input type="tel" name="valid-tel" pattern="[0-9]{9}" required>
+            </label>
+
+            <label>URL válida:
+                <input type="url" name="valid-url" required>
+            </label>
+
+            <label>Fecha de inicio:
+                <input type="date" name="valid-fecha" required>
+            </label>
+
+            <label>Subir archivo:
+                <input type="file" name="archivo" accept=".pdf,.jpg,.png">
+            </label>
+        </fieldset>
+
+        <button type="submit">Enviar formulario</button>
+    </form>
+</body>
+
+</html>
