@@ -1,0 +1,18 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f4f8;
+}
+
+.caja {
+    width: 60%;
+    max-width: 600px;
+    background-color: white;
+    padding: 30px;
+    border: 1px solid #999;
+    text-align: center;
+}

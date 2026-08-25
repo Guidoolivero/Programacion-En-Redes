@@ -1,0 +1,42 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+}
+
+.titulo-grande {
+    font-size: 32px;
+    color: darkblue;
+}
+
+.texto-pequeno {
+    font-size: 12px;
+}
+
+.texto-mediano {
+    font-size: 16px;
+}
+
+.texto-grande {
+    font-size: 24px;
+}
+
+.texto-rem {
+    font-size: 1.5rem;
+    color: darkgreen;
+}
+
+.texto-porcentaje {
+    font-size: 120%;
+    color: darkred;
+}
+
+.caja {
+    font-size: 18px;
+    border: 1px solid #999;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.texto-em {
+    font-size: 1.2em;
+}
