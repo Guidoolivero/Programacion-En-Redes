@@ -1,0 +1,62 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f1ea;
+  color: #1c1917;
+  margin: 24px;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.nota {
+  max-width: 560px;
+  background: #fff;
+  border-left: 4px solid #0f766e;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+
+code {
+  background: #e7e5e4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.padre {
+  position: relative; /* punto de referencia */
+  width: 420px;
+  min-height: 280px;
+  margin-top: 24px;
+  padding: 16px;
+  background: #d6d3d1;
+  border: 3px solid #44403c;
+}
+
+.hijo {
+  position: relative; /* se corre desde SU lugar original */
+  width: 160px;
+  padding: 16px;
+  color: #1c1917;
+  font-weight: bold;
+}
+
+.uno {
+  background: #fca5a5;
+  left: 20px; /* 20px a la derecha de donde debería estar */
+}
+
+.dos {
+  background: #86efac;
+  top: 20px; /* 20px más abajo */
+}
+
+.tres {
+  background: #93c5fd;
+  left: 40px;
+  top: -10px; /* un poco hacia arriba, se superpone */
+}

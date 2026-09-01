@@ -1,0 +1,58 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f1ea;
+  color: #1c1917;
+  margin: 24px;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.nota {
+  max-width: 560px;
+  background: #fff;
+  border-left: 4px solid #0f766e;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+
+code {
+  background: #e7e5e4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.envoltorio {
+  margin-top: 24px;
+  max-width: 560px;
+  overflow-x: auto; /* si no entra, aparece scroll horizontal */
+  background: #fff;
+  border: 1px solid #d6d3d1;
+}
+
+table {
+  width: 100%;
+  min-width: 480px; /* obliga el scroll en pantallas chicas */
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+th {
+  background: #1c1917;
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background: #fafaf9;
+}

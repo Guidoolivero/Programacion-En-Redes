@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. Divs internos relativos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Divs internos relativos</h1>
+  <p class="nota">
+    El padre tiene <code>position: relative</code> (sirve de referencia).
+    Cada hijo también es <code>relative</code> y se corre un poco con
+    <code>top</code> / <code>left</code>. Siguen ocupando su lugar en el flujo:
+    solo se “desplazan” visualmente.
+  </p>
+
+  <div class="padre">
+    PADRE (relative)
+    <div class="hijo uno">Hijo 1<br>left: 20px</div>
+    <div class="hijo dos">Hijo 2<br>top: 20px</div>
+    <div class="hijo tres">Hijo 3<br>left: 40px; top: -10px</div>
+  </div>
+</body>
+</html>

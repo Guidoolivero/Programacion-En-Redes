@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Formulario RWD</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Formulario responsive</h1>
+  <p class="nota">
+    En pantalla ancha: nombre y email van lado a lado (dos columnas).
+    En celular (<code>max-width: 600px</code>): cada campo ocupa el 100%.
+  </p>
+
+  <form class="formulario">
+    <div class="fila">
+      <label>
+        Nombre
+        <input type="text" name="nombre" placeholder="Ana">
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" placeholder="ana@mail.com">
+      </label>
+    </div>
+
+    <label>
+      Mensaje
+      <textarea name="mensaje" rows="4" placeholder="Escribí tu consulta"></textarea>
+    </label>
+
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>

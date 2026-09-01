@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. Divs internos absolutos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Divs internos absolutos</h1>
+  <p class="nota">
+    El padre es <code>position: relative</code>.
+    Los hijos son <code>position: absolute</code>: se salen del flujo
+    y se clavan en una esquina con <code>top / right / bottom / left</code>.
+  </p>
+
+  <div class="padre">
+    PADRE (relative)
+    <div class="hijo tl">top left</div>
+    <div class="hijo tr">top right</div>
+    <div class="hijo bl">bottom left</div>
+    <div class="hijo br">bottom right</div>
+    <div class="hijo centro">centro</div>
+  </div>
+</body>
+</html>

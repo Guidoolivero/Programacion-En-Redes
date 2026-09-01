@@ -1,0 +1,78 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f1ea;
+  color: #1c1917;
+  margin: 24px;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.nota {
+  max-width: 560px;
+  background: #fff;
+  border-left: 4px solid #0f766e;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+
+code {
+  background: #e7e5e4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.padre {
+  position: relative; /* sin esto, los absolutos se miden contra la ventana */
+  width: 420px;
+  height: 280px;
+  margin-top: 24px;
+  background: #d6d3d1;
+  border: 3px solid #44403c;
+  padding: 12px;
+}
+
+.hijo {
+  position: absolute;
+  width: 110px;
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.tl {
+  top: 8px;
+  left: 8px;
+  background: #fca5a5;
+}
+
+.tr {
+  top: 8px;
+  right: 8px;
+  background: #86efac;
+}
+
+.bl {
+  bottom: 8px;
+  left: 8px;
+  background: #93c5fd;
+}
+
+.br {
+  bottom: 8px;
+  right: 8px;
+  background: #fcd34d;
+}
+
+.centro {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* truco: mueve la caja a su propio centro */
+  background: #e9d5ff;
+  width: 90px;
+}
