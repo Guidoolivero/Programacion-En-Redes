@@ -7,30 +7,100 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Formulario responsive</h1>
-  <p class="nota">
-    En pantalla ancha: nombre y email van lado a lado (dos columnas).
-    En celular (<code>max-width: 600px</code>): cada campo ocupa el 100%.
-  </p>
 
-  <form class="formulario">
-    <div class="fila">
-      <label>
-        Nombre
-        <input type="text" name="nombre" placeholder="Ana">
-      </label>
-      <label>
-        Email
-        <input type="email" name="email" placeholder="ana@mail.com">
-      </label>
+  <header>Formulario</header>
+
+  <form>
+    <div class="grilla">
+
+      <div class="celda">
+        <label>1 Apellido:</label>
+        <input type="text" name="apellido">
+      </div>
+
+      <div class="celda">
+        <label>2 Nombres:</label>
+        <input type="text" name="nombres">
+      </div>
+
+      <div class="celda">
+        <label>3 Contraseña:</label>
+        <input type="password" name="pass">
+      </div>
+
+      <div class="celda">
+        <label>4 Campo deshabilitado:</label>
+        <input type="text" value="valor deshabilitado" disabled>
+      </div>
+
+      <div class="celda">
+        <label>5 Fecha</label>
+        <input type="date" name="fecha">
+      </div>
+
+      <div class="celda">
+        <label>6 DNI:</label>
+        <input type="text" name="dni">
+      </div>
+
+      <div class="celda">
+        <label>7 Actividades extracurriculares</label>
+        <label class="op"><input type="checkbox" name="act" value="musica"> Musica:</label>
+        <label class="op"><input type="checkbox" name="act" value="pintura"> Pintura artistica:</label>
+      </div>
+
+      <div class="celda">
+        <label>8 Sexo:</label>
+        <label class="op"><input type="radio" name="sexo" value="m"> Masculino:</label>
+        <label class="op"><input type="radio" name="sexo" value="f"> Femenino:</label>
+      </div>
+
+      <div class="celda vacio">
+        <strong>9 Vacío</strong>
+      </div>
+
+      <div class="celda">
+        <label>10 Estudios cursados</label>
+        <select name="estudios">
+          <option>Primarios</option>
+          <option>Secundarios</option>
+          <option>Terciarios</option>
+        </select>
+      </div>
+
+      <div class="celda">
+        <label>11 Area de desempeño</label>
+        <select name="area">
+          <option>Administración</option>
+          <option>Ventas</option>
+          <option>Sistemas</option>
+        </select>
+      </div>
+
+      <div class="celda">
+        <label>12 Turno</label>
+        <select name="turno">
+          <option>Mañana</option>
+          <option>Tarde</option>
+          <option>Noche</option>
+        </select>
+      </div>
+
+      <div class="celda">
+        <label>13 Conduce</label>
+        <label class="op"><input type="radio" name="conduce" value="si"> SI</label>
+        <label class="op"><input type="radio" name="conduce" value="no"> No</label>
+      </div>
+
     </div>
 
-    <label>
-      Mensaje
-      <textarea name="mensaje" rows="4" placeholder="Escribí tu consulta"></textarea>
-    </label>
-
-    <button type="submit">Enviar</button>
+    <div class="botones">
+      <button type="submit">Enviar</button>
+      <button type="reset">Reset</button>
+    </div>
   </form>
+
+  <footer>Pie de formulario</footer>
+
 </body>
 </html>

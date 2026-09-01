@@ -1,62 +1,75 @@
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   font-family: Arial, sans-serif;
-  background: #f4f1ea;
-  color: #1c1917;
-  margin: 24px;
+  background: #fff;
+  color: #111;
+  padding: 16px 16px 80px;
 }
 
 h1 {
-  margin-top: 0;
+  font-size: 24px;
+  margin: 16px 0 12px;
 }
 
-.nota {
-  max-width: 560px;
-  background: #fff;
-  border-left: 4px solid #0f766e;
-  padding: 12px 14px;
-  line-height: 1.45;
+/* ----- RELATIVOS: se corren desde su lugar, siguen en el flujo ----- */
+.relativo {
+  position: relative;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 15px;
 }
 
-code {
-  background: #e7e5e4;
-  padding: 1px 5px;
-  border-radius: 4px;
+.r1 {
+  background: #f3f3f3;
+  margin-left: 20px; /* corre 20px a la derecha */
 }
 
-.padre {
-  position: relative; /* punto de referencia */
+.r2 {
+  background: #d0d0d0;
+  margin-left: 40px; /* corre 40px a la derecha */
+}
+
+/* ----- Contenido de la página (se scrollea) ----- */
+.banner {
+  background: #d4654a;
+  color: #fff;
+  padding: 48px 28px;
+  line-height: 1.5;
+}
+
+.foto {
   width: 420px;
-  min-height: 280px;
-  margin-top: 24px;
-  padding: 16px;
-  background: #d6d3d1;
-  border: 3px solid #44403c;
+  height: 280px;
+  margin: 0 auto;
+  background-color: #111;
+  background-image:
+    radial-gradient(circle at 18% 22%, #ddd 3px, transparent 4px),
+    radial-gradient(circle at 62% 48%, #bbb 4px, transparent 5px),
+    radial-gradient(circle at 38% 78%, #ccc 3px, transparent 4px),
+    radial-gradient(circle at 82% 18%, #aaa 3px, transparent 4px),
+    radial-gradient(circle at 10% 60%, #eee 2px, transparent 3px);
+  background-size: 36px 36px;
 }
 
-.hijo {
-  position: relative; /* se corre desde SU lugar original */
-  width: 160px;
-  padding: 16px;
-  color: #1c1917;
-  font-weight: bold;
+/* ----- FIJO: se mide contra la VENTANA, no contra el padre ----- */
+.fijo {
+  position: fixed;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* lo centra de verdad */
+  width: 260px;
+  padding: 16px 18px 18px;
+  text-align: center;
+  background: rgba(232, 210, 40, 0.75); /* amarillo translúcido */
+  z-index: 10;
 }
 
-.uno {
-  background: #fca5a5;
-  left: 20px; /* 20px a la derecha de donde debería estar */
-}
-
-.dos {
-  background: #86efac;
-  top: 20px; /* 20px más abajo */
-}
-
-.tres {
-  background: #93c5fd;
-  left: 40px;
-  top: -10px; /* un poco hacia arriba, se superpone */
+.fijo p {
+  margin-top: 8px;
+  font-size: 14px;
 }

@@ -1,78 +1,111 @@
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   font-family: Arial, sans-serif;
-  background: #f4f1ea;
-  color: #1c1917;
-  margin: 24px;
+  background: #b9dce6;
+  color: #111;
 }
 
 h1 {
-  margin-top: 0;
-}
-
-.nota {
-  max-width: 560px;
-  background: #fff;
-  border-left: 4px solid #0f766e;
-  padding: 12px 14px;
-  line-height: 1.45;
+  background: #12335a;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 14px;
 }
 
 code {
-  background: #e7e5e4;
-  padding: 1px 5px;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 13px;
 }
 
-.padre {
-  position: relative; /* sin esto, los absolutos se miden contra la ventana */
-  width: 420px;
-  height: 280px;
-  margin-top: 24px;
-  background: #d6d3d1;
-  border: 3px solid #44403c;
-  padding: 12px;
+.escenario {
+  position: relative;
+  height: calc(100vh - 36px);
+  min-height: 420px;
 }
 
-.hijo {
+.caja {
   position: absolute;
-  width: 110px;
-  padding: 10px;
-  font-weight: bold;
-  text-align: center;
+  width: 28%;
+  min-width: 220px;
+  padding: 16px 18px;
 }
 
-.tl {
-  top: 8px;
-  left: 8px;
-  background: #fca5a5;
+.caja h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
 }
 
-.tr {
-  top: 8px;
-  right: 8px;
-  background: #86efac;
+.caja p {
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.bl {
-  bottom: 8px;
-  left: 8px;
-  background: #93c5fd;
+.uno {
+  top: 12%;
+  left: 8%;
+  height: 42%;
+  background: #7dffb0;
+  z-index: 1;
 }
 
-.br {
-  bottom: 8px;
-  right: 8px;
-  background: #fcd34d;
+.dos {
+  bottom: 8%;
+  right: 12%;
+  height: 38%;
+  color: #fff;
+  background-color: #111;
+  background-image: radial-gradient(circle at 20% 30%, #555 2px, transparent 3px),
+                    radial-gradient(circle at 70% 60%, #666 3px, transparent 4px),
+                    radial-gradient(circle at 40% 80%, #444 2px, transparent 3px),
+                    radial-gradient(circle at 85% 25%, #777 2px, transparent 3px);
+  background-size: 40px 40px;
+  border: 10px solid #e8f5c8;
+  transform: rotate(-12deg);
+  z-index: 2;
 }
 
-.centro {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* truco: mueve la caja a su propio centro */
-  background: #e9d5ff;
-  width: 90px;
+.dos code {
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+
+.tres {
+  top: 32%;
+  left: 30%;
+  height: 36%;
+  background: rgba(120, 120, 120, 0.55);
+  z-index: 3;
+}
+
+@media (max-width: 700px) {
+  .caja {
+    width: 70%;
+  }
+
+  .uno {
+    top: 8%;
+    left: 8%;
+    height: auto;
+  }
+
+  .dos {
+    right: 8%;
+    bottom: 8%;
+    height: auto;
+    transform: rotate(-6deg);
+  }
+
+  .tres {
+    top: 38%;
+    left: 15%;
+    height: auto;
+  }
 }

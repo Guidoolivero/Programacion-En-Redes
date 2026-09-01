@@ -1,51 +1,61 @@
 * {
   box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f1ea;
-  color: #1c1917;
-  margin: 24px;
-}
-
-h1 {
-  margin-top: 0;
-}
-
-.nota {
-  max-width: 560px;
-  background: #fff;
-  border-left: 4px solid #0f766e;
-  padding: 12px 14px;
-  line-height: 1.45;
-}
-
-code {
-  background: #e7e5e4;
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-.menu {
-  margin-top: 24px;
-  background: #1c1917;
-}
-
-.menu ul {
-  display: flex;
-  list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.menu a {
-  display: block;
-  padding: 14px 22px;
-  color: #fafaf9;
-  text-decoration: none;
+body {
+  font-family: Arial, sans-serif;
+  background: #fff;
 }
 
+.menu {
+  background: #2b2b2b;
+}
+
+.menu ul {
+  list-style: none;
+}
+
+/* fila de arriba */
+.menu > ul {
+  display: flex;
+}
+
+.menu > ul > li {
+  position: relative; /* origen del submenu */
+}
+
+.menu a {
+  display: block;
+  padding: 12px 18px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.menu > ul > li:hover > a,
 .menu a:hover {
-  background: #0f766e;
+  background: #1a1a1a;
+}
+
+/* submenu escondido */
+.menu li ul {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: #2b2b2b;
+}
+
+/* al pasar el mouse, aparece */
+.menu li:hover > ul {
+  display: block;
+}
+
+.menu li ul a {
+  padding: 8px 14px;
+  font-size: 13px;
+  white-space: nowrap;
 }

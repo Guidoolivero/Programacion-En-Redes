@@ -1,47 +1,31 @@
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+/* El BODY es la caja flex.
+   Al tener 100vh, justify + align centran
+   las 3 fotos en el medio de la pantalla. */
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f1ea;
-  color: #1c1917;
-  margin: 24px;
-}
-
-h1 {
-  margin-top: 0;
-}
-
-.nota {
-  max-width: 560px;
-  background: #fff;
-  border-left: 4px solid #0f766e;
-  padding: 12px 14px;
-  line-height: 1.45;
-}
-
-code {
-  background: #e7e5e4;
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-.padre {
   display: flex;
-  justify-content: center; /* eje horizontal */
-  align-items: center;     /* eje vertical */
-  width: 420px;
-  height: 280px;
-  margin-top: 24px;
-  background: #d6d3d1;
-  border: 3px solid #44403c;
+  justify-content: center; /* horizontal */
+  align-items: center;     /* vertical  ← esto es el ejercicio */
+  gap: 24px;
+  min-height: 100vh;
+  background: #f7f1c8; /* crema, como el del video */
 }
 
-.caja {
-  background: #0f766e;
-  color: #fff;
-  padding: 24px 32px;
-  font-weight: bold;
-  border-radius: 8px;
+.caja img {
+  display: block;
+  width: 260px;
+  height: 180px;
+  object-fit: cover;
+}
+
+@media (max-width: 800px) {
+  body {
+    flex-direction: column;
+    padding: 24px 0;
+  }
 }

@@ -3,23 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1. Divs internos relativos</title>
+  <title>1. Divs relativos y fijo</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Divs internos relativos</h1>
-  <p class="nota">
-    El padre tiene <code>position: relative</code> (sirve de referencia).
-    Cada hijo también es <code>relative</code> y se corre un poco con
-    <code>top</code> / <code>left</code>. Siguen ocupando su lugar en el flujo:
-    solo se “desplazan” visualmente.
-  </p>
 
-  <div class="padre">
-    PADRE (relative)
-    <div class="hijo uno">Hijo 1<br>left: 20px</div>
-    <div class="hijo dos">Hijo 2<br>top: 20px</div>
-    <div class="hijo tres">Hijo 3<br>left: 40px; top: -10px</div>
+  <h1>Divs relativos</h1>
+
+  <div class="relativo r1">Div relativo 1 (margen-izq 20px)</div>
+  <div class="relativo r2">Div relativo 2 (margen-izq 40px)</div>
+
+  <h1>Div fijo centrado (con transparencia)</h1>
+
+  <div class="banner">
+    Estas cajas de abajo son contenido normal de la página.
+    Si scrolleás, se mueven. El cartel amarillo no: está fijo.
   </div>
+
+  <div class="foto"></div>
+
+  <!-- sale del flujo: queda pegado al centro de la VENTANA -->
+  <div class="fijo">
+    <strong>Contenedor fijo centrado</strong>
+    <p>Este contenedor permanece inmóvil.</p>
+  </div>
+
 </body>
 </html>

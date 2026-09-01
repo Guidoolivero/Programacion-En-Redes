@@ -7,20 +7,37 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Divs internos absolutos</h1>
-  <p class="nota">
-    El padre es <code>position: relative</code>.
-    Los hijos son <code>position: absolute</code>: se salen del flujo
-    y se clavan en una esquina con <code>top / right / bottom / left</code>.
-  </p>
 
-  <div class="padre">
-    PADRE (relative)
-    <div class="hijo tl">top left</div>
-    <div class="hijo tr">top right</div>
-    <div class="hijo bl">bottom left</div>
-    <div class="hijo br">bottom right</div>
-    <div class="hijo centro">centro</div>
+  <h1>Posicionamiento absoluto adaptable al medio</h1>
+
+  <div class="escenario">
+
+    <div class="caja uno">
+      <h2>Caja 1 — atrás</h2>
+      <p>
+        <code>position: absolute</code> desde el origen del padre.
+        <code>z-index: 1</code> la deja en la capa de abajo.
+      </p>
+    </div>
+
+    <div class="caja dos">
+      <h2>Caja 2 — rotada</h2>
+      <p>
+        Misma técnica, pero con
+        <code>transform: rotate(-12deg)</code>
+        y un fondo con textura.
+      </p>
+    </div>
+
+    <div class="caja tres">
+      <h2>Caja 3 — adelante</h2>
+      <p>
+        Fondo gris con <code>rgba()</code> (se ve lo de atrás).
+        <code>z-index: 3</code> la pone arriba de las otras dos.
+      </p>
+    </div>
+
   </div>
+
 </body>
 </html>
