@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>JS03_1_variablesSimples</title>
+  <style>
+    body { font-family: "Times New Roman", Times, serif; margin: 16px; }
+    button { margin: 2px; }
+    #salida {
+      margin-top: 16px;
+      background: #b8d4e8;
+      border: 3px solid #000;
+      min-height: 160px;
+      padding: 12px 16px;
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <button type="button" onclick="mostrarZ()">var z;</button>
+  <button type="button" onclick="mostrarQ()">let q;</button>
+  <button type="button" onclick="mostrarA()">var a=1;</button>
+  <button type="button" onclick="mostrarB()">var b="1";</button>
+  <button type="button" onclick="mostrarC()">var c=2;</button>
+  <button type="button" onclick="mostrarSuma1()">suma1=a+b;</button>
+  <button type="button" onclick="mostrarSuma2()">suma2=a+c;</button>
+
+  <div id="salida"></div>
+
+  <script src="variables.js"></script>
+</body>
+</html>

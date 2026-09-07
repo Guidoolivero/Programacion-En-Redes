@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sentencias simples en java script</title>
+  <style>
+    body { font-family: "Times New Roman", Times, serif; margin: 16px; }
+    h2 { font-size: 24px; margin: 16px 0 8px; }
+    p { font-size: 18px; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <!-- El script se carga durante el parseo del documento (sin defer).
+       Por eso document.write() AGREGA texto y no borra la página. -->
+  <script src="sentencias.js"></script>
+  <script>
+    mostrarAlert3();
+  </script>
+
+  <h2>Texto1 escrito directamente en HTML</h2>
+
+  <script>
+    escribirTexto2();
+    mostrarAlert6();
+  </script>
+
+  <h2>Texto 4 escrito en HTML escrito después de presentar el alert("3")</h2>
+
+  <script>
+    escribirTexto5();
+  </script>
+</body>
+</html>
