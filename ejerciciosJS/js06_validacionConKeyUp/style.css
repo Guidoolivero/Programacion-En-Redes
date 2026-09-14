@@ -1,0 +1,28 @@
+/* index.html */
+body { font-family: "Times New Roman", Times, serif; margin: 16px; }
+    h2 { font-size: 22px; margin-bottom: 12px; }
+    #caja {
+      background: #c5d8ea;
+      width: 620px;
+      margin: 0 auto;
+      padding: 16px 24px 24px;
+    }
+    label { display: block; font-size: 14px; }
+    input[type="number"], input[type="text"] {
+      width: 160px;
+      margin: 4px 0 10px;
+    }
+    .botones {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0;
+      margin-top: 8px;
+    }
+    .botones input {
+      width: 180px;
+      padding: 4px 0;
+    }
+
+/* respuesta.html */
+body { font-family: "Times New Roman", Times, serif; margin: 16px; }
+    h2 { font-size: 24px; }

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>JS14_ValidacionConKeyUp.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Ejer validación de un INPUT de formulario en el evento de onKeyUp</h2>
+
+  <form id="caja" action="respuesta.html" method="get">
+    <label for="diaDelMes">Ingrese el dia del mes:</label>
+    <input type="number" id="diaDelMes" name="diaDelMes" onkeyup="validarDia()">
+
+    <label for="mes">Ingrese el mes:</label>
+    <input type="text" id="mes" name="mes" onkeyup="validarMes()">
+
+    <div class="botones">
+      <input type="submit" value="Enviar">
+      <input type="reset" value="Reset">
+    </div>
+  </form>
+
+  <script src="validacion.js"></script>
+</body>
+</html>

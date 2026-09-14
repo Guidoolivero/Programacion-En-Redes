@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>js18_FromABM.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="fondo" id="fondo"></div>
+
+  <form id="caja" method="get">
+    <h1>FORMULARIO ABM</h1>
+
+    <label for="apellido">Apellido:</label>
+    <input type="text" id="apellido" name="apellido">
+
+    <label for="nombres">Nombres:</label>
+    <input type="text" id="nombres" name="nombres">
+
+    <label for="saldo">Saldo:</label>
+    <input type="number" id="saldo" name="saldo">
+
+    <div class="acciones">
+      <button type="button" onclick="blanquear()">Blanquear</button>
+      <button type="button" onclick="enviar('alta.html')">Alta</button>
+      <button type="button" onclick="enviar('modi.html')">Modi</button>
+      <button type="button" onclick="enviar('baja.html')">Baja</button>
+    </div>
+  </form>
+
+  <script src="abm.js"></script>
+</body>
+</html>

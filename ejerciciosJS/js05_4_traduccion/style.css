@@ -1,0 +1,14 @@
+/* index.html */
+body {
+      font-family: "Times New Roman", Times, serif;
+      text-align: center;
+      margin-top: 80px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: normal;
+    }
+    .destacado {
+      font-size: 56px;
+      font-weight: bold;
+    }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Variable de tipo objeto de dato</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="consignas">
+    <strong>Consignas del ejercicio</strong><br>
+    No usar jquery por ahora<br>
+    Armar 3 contenedores: (1)Ingreso de datos, (2) Control y (3)Presentación de tabla que aparece y desaparece con botones en el control<br>
+    Declarar y hacer uso de Objetos de dato (datos de tipo objeto)<br>
+    Cargar 2 personas en un array por programa<br>
+    Dejar de usar la función prompt() para el ingreso de datos. Armar un contenedor para el ingreso de datos desde consola (solo inputs sin formulario)<br>
+    Dejar de usar document.write() y escribir contenido dentro de un elemento html (puede ser un div de presentación)<br>
+    Tres botones para llamar a tres funciones. Una para cargar un nuevo objeto de dato PREVIA VALIDACION!,<br>
+    otra para mostrar en formato de tabla el array completo de elementos con su longitud,<br>
+    y la tercera para ocultar la presentación.<br>
+    El procedimiento para ocultar el elemento de presentación cambiara el estilo display:none del contenedor de presentacion.
+  </div>
+
+  <div class="fila">
+    <div id="ingreso" class="caja">
+      <strong>Ingreso de datos de persona:</strong>
+      <label>Nombre:</label>
+      <input type="text" id="nombre">
+      <label>Apellido:</label>
+      <input type="text" id="apellido">
+      <label>Fecha de Nacimiento:</label>
+      <input type="text" id="fecha">
+    </div>
+    <div id="control" class="caja">
+      <strong>Control</strong><br>
+      <button type="button" onclick="crearPersona()">Crea persona</button>
+      <button type="button" onclick="listarPersonas()">Lista personas</button>
+      <button type="button" onclick="ocultarPresentacion()">Oculta presentación</button>
+    </div>
+  </div>
+
+  <div id="presentacion" class="caja">
+    <strong>Presentacion</strong>
+    <div id="tabla"></div>
+  </div>
+
+  <script src="objetos.js"></script>
+</body>
+</html>

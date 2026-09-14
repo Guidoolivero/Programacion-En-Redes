@@ -1,0 +1,23 @@
+/* index.html */
+body { font-family: Arial, sans-serif; font-size: 14px; margin: 12px; }
+    .consignas { margin-bottom: 12px; }
+    .fila {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .caja {
+      background: #f7f4d4;
+      border: 1px solid #bbb;
+      padding: 8px 10px;
+    }
+    #ingreso { flex: 1; }
+    #control { flex: 1; }
+    label { display: block; font-size: 12px; margin-top: 6px; }
+    input { width: 180px; }
+    #presentacion {
+      margin-top: 10px;
+      display: none;
+    }
+    table { border-collapse: collapse; margin-top: 4px; }
+    td { border: 1px solid #333; padding: 1px 8px; font-size: 13px; }
