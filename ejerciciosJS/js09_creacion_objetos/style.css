@@ -1,18 +1,37 @@
-/* index.html */
-body { font-family: "Times New Roman", Times, serif; margin: 8px; }
-    #escenario {
-      width: 560px;
-      min-height: 280px;
-      margin: 60px auto 0;
-      background: #f7f3c8;
-      padding: 28px 40px;
-      overflow: auto;
-      max-height: 360px;
-    }
-    .item {
-      width: 280px;
-      background: #c5d8ea;
-      border: 2px solid #333;
-      padding: 8px 12px;
-    }
-    .item h1 { margin: 0; font-size: 26px; }
+body {
+  font-family: "Times New Roman", Times, serif;
+  margin: 8px;
+}
+
+.acciones {
+  width: 560px;
+  margin: 56px auto 12px;
+}
+
+.acciones button {
+  margin-right: 8px;
+  padding: 6px 14px;
+  font-size: 16px;
+}
+
+#escenario {
+  width: 560px;
+  min-height: 280px;
+  margin: 0 auto;
+  background: #f7f3c8;
+  padding: 28px 40px;
+  overflow: auto;
+  max-height: 360px;
+}
+
+.item {
+  width: 280px;
+  background: #c5d8ea;
+  border: 2px solid #333;
+  padding: 8px 12px;
+}
+
+.item h1 {
+  margin: 0;
+  font-size: 26px;
+}
