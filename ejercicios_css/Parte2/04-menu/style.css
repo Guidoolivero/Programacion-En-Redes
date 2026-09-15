@@ -45,8 +45,11 @@ body {
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 220px;
+  min-width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
   background: #2b2b2b;
+  z-index: 10;
 }
 
 /* al pasar el mouse, aparece */
