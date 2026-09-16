@@ -1,17 +1,22 @@
+/* Modal: visibility + clases activo/pasivo (opacity y pointer-events). */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; font-family: "Segoe UI", Arial, sans-serif; }
-#contenedor { min-height: 100vh; background: #b8dce8; padding: 16px 20px; }
+html, body { height: 100%; font-family: "Segoe UI", Arial, sans-serif; color: #1f2a28; }
+#contenedor { min-height: 100vh; background: #f4efe6; padding: 20px; }
+#contenedor h2 { color: #1f4e4a; margin-bottom: 10px; }
+#btAbrirModal { margin: 8px 0 16px; padding: 10px 16px; border: none; border-radius: 6px; background: #e08a2c; color: #fff; cursor: pointer; }
+.ayudas { max-width: 520px; font-size: 0.92rem; line-height: 1.4; background: #fff; border-left: 6px solid #1f4e4a; padding: 12px 14px; border-radius: 6px; }
 div.ventanaModalApagado { visibility: hidden; }
 div.ventanaModalPrendido { visibility: visible; }
 div.contenedorActivo { opacity: 1; pointer-events: auto; }
 div.contenedorPasivo { opacity: 0.3; pointer-events: none; }
-#ventanaModal { position: fixed; top: 6vh; left: 8vw; width: 84vw; height: 86vh; background: #d7d7d7; border: 2px solid #7a7a7a; z-index: 20; display: flex; flex-direction: column; overflow: hidden; }
-.modal-barra { background: #9a9a9a; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-weight: 700; }
-.cerrar { color: #c0392b; font-size: 1.4rem; font-weight: 700; cursor: pointer; background: none; border: none; }
-.encabezado, .pie { background: #bdbdbd; text-align: center; font-weight: 700; font-size: 1.2rem; padding: 10px; }
-.cuerpo { flex: 1 1 auto; background: #eaf5c8; padding: 16px 24px; overflow: auto; }
-.grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 40px; align-items: end; }
+#ventanaModal { position: fixed; top: 6vh; left: 8vw; width: 84vw; height: 86vh; background: #fff; border: 1px solid #d7cfc3; border-radius: 10px; z-index: 20; display: flex; flex-direction: column; overflow: hidden; }
+.modal-barra { background: #1f4e4a; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-weight: 700; }
+.cerrar { color: #ffd7a8; font-size: 1.5rem; font-weight: 700; cursor: pointer; background: none; border: none; }
+.encabezado, .pie { background: #2a6a64; color: #fff; text-align: center; font-weight: 700; font-size: 1.1rem; padding: 10px; }
+.cuerpo { flex: 1 1 auto; background: #f4efe6; padding: 16px 24px; overflow: auto; }
+.grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 36px; align-items: end; }
 .campo { display: flex; flex-direction: column; gap: 6px; }
-.campo input, .campo select { width: 100%; height: 40px; padding: 6px 10px; border: 1px solid #bbb; background: #fff; }
-.btn-enviar { width: 100%; height: 46px; border: 1px solid #b5b5b5; background: #ececec; cursor: pointer; }
+.campo label { font-weight: 600; }
+.campo input, .campo select { width: 100%; height: 40px; padding: 6px 10px; border: 1px solid #cbbfae; border-radius: 6px; background: #fff; }
+.btn-enviar { width: 100%; height: 46px; border: none; border-radius: 6px; background: #e08a2c; color: #fff; cursor: pointer; letter-spacing: 1px; }
 @media (max-width: 800px) { #ventanaModal { left: 3vw; width: 94vw; } .grilla { grid-template-columns: 1fr; } }
