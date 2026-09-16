@@ -1,0 +1,38 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: "Segoe UI", Arial, sans-serif; }
+div.ventanaModalApagado { visibility: hidden; }
+div.ventanaModalPrendido { visibility: visible; }
+div.contenedorActivo { opacity: 1; pointer-events: auto; }
+div.contenedorPasivo { opacity: 0.3; pointer-events: none; }
+#contenedor { height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: #b8dce8; }
+.barra-superior { background: #eaf5c8; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; gap: 12px; }
+.barra-superior h1 { font-size: 1.25rem; flex: 1; }
+.acciones { display: flex; gap: 12px; flex-wrap: wrap; }
+.acciones button { min-width: 130px; height: 40px; border: 1px solid #bdbdbd; background: #ececec; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+thead, tfoot { background: #e57373; color: #fff; display: table; width: 100%; table-layout: fixed; }
+thead th, tfoot td { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 10px 6px; text-align: center; }
+tbody { display: block; overflow-y: auto; height: calc(100vh - 118px); }
+tbody tr { display: table; width: 100%; table-layout: fixed; }
+tbody tr:nth-child(odd) { background: #8fb8c6; }
+tbody tr:nth-child(even) { background: #7aa7b7; }
+tbody td { padding: 8px; font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pie { flex: 0 0 42px; background: #eaf5c8; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+[campo-dato="nroFactura"] { width: 16%; }
+[campo-dato="fechaFactura"] { width: 11%; }
+[campo-dato="codArticulo"] { width: 10%; }
+[campo-dato="descripcion"] { width: 26%; text-align: left; }
+[campo-dato="codUm"] { width: 7%; }
+[campo-dato="cantidad"] { width: 9%; text-align: right; }
+[campo-dato="precioUnitario"] { width: 10%; text-align: right; }
+[campo-dato="importeRenglon"] { width: 11%; text-align: right; }
+#ventanaModal { position: fixed; top: 5vh; left: 8vw; width: 84vw; height: 88vh; background: #d7d7d7; border: 2px solid #6e6e6e; z-index: 30; display: flex; flex-direction: column; overflow: hidden; }
+.modal-barra { background: #8a8a8a; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-weight: 700; }
+.cerrar { color: #c0392b; font-size: 1.45rem; font-weight: 700; cursor: pointer; background: none; border: none; }
+.encabezado-form, .pie-form { background: #8b1e2d; color: #fff; text-align: center; font-weight: 700; padding: 10px; }
+.cuerpo-form { flex: 1 1 auto; background: #eaf5c8; padding: 16px 24px; overflow: auto; }
+.grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 40px; align-items: end; }
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo input, .campo select { width: 100%; height: 40px; padding: 6px 10px; border: 1px solid #bbb; background: #fff; }
+.btn-enviar { width: 100%; height: 46px; border: 1px solid #b5b5b5; background: #ececec; cursor: pointer; }
+@media (max-width: 800px) { #ventanaModal { left: 2vw; width: 96vw; } .grilla { grid-template-columns: 1fr; } }

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla y Formulario juntos</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="../jquery.js"></script>
+    <script src="../datosCompartidos.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <div id="contenedor" class="contenedorActivo">
+        <div class="barra-superior">
+            <h1>Renglones de factura de ventas</h1>
+            <div class="acciones">
+                <button type="button" id="btCargar">Cargar datos</button>
+                <button type="button" id="btVaciar">Vaciar datos</button>
+                <button type="button" id="btCargarForm">Cargar Form</button>
+            </div>
+        </div>
+        <div class="zona-tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th campo-dato="nroFactura">NroFactura</th>
+                        <th campo-dato="fechaFactura">FechaFactura</th>
+                        <th campo-dato="codArticulo">Cod_articulo</th>
+                        <th campo-dato="descripcion">Descripcion</th>
+                        <th campo-dato="codUm">UM</th>
+                        <th campo-dato="cantidad">Cantidad</th>
+                        <th campo-dato="precioUnitario">Precio_Unitario</th>
+                        <th campo-dato="importeRenglon">Importe_Renglon</th>
+                    </tr>
+                </thead>
+                <tbody id="tbDatos"></tbody>
+                <tfoot>
+                    <tr>
+                        <td campo-dato="nroFactura">s nroFactura</td>
+                        <td campo-dato="fechaFactura">s fecha</td>
+                        <td campo-dato="codArticulo">s cod</td>
+                        <td campo-dato="descripcion">s descripcion</td>
+                        <td campo-dato="codUm">s um</td>
+                        <td campo-dato="cantidad">s cantidad</td>
+                        <td campo-dato="precioUnitario">s precio</td>
+                        <td campo-dato="importeRenglon">s importe</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <footer class="pie">Pie</footer>
+    </div>
+    <div id="ventanaModal" class="ventanaModalApagado">
+        <div class="modal-barra">
+            <span>Encabezado modal</span>
+            <button type="button" id="btCerrarModal" class="cerrar">×</button>
+        </div>
+        <header class="encabezado-form">Formulario para ALTA - Renglones de factura de ventas</header>
+        <main class="cuerpo-form">
+            <form id="formAlta" action="#" method="get">
+                <div class="grilla">
+                    <div class="campo"><label for="nroFactura">NroFactura:</label><input type="text" id="nroFactura" required></div>
+                    <div class="campo"><label for="selectUnidadMedida">Unidad de medida:</label><select id="selectUnidadMedida" required></select></div>
+                    <div class="campo"><label for="codArticulo">Cod_articulo:</label><input type="text" id="codArticulo" required></div>
+                    <div class="campo"><label for="fechaFactura">FechaFactura:</label><input type="date" id="fechaFactura" required></div>
+                    <div class="campo"><label for="descripcion">Descripcion:</label><input type="text" id="descripcion" required></div>
+                    <div class="campo"><label for="cantidad">Cantidad:</label><input type="number" id="cantidad" required min="0.01" step="0.01" value="0"></div>
+                    <div class="campo"><label for="precioUnitario">Precio_Unitario:</label><input type="number" id="precioUnitario" required min="0" step="0.01" value="0"></div>
+                    <div class="campo"><label for="importeRenglon">Importe_Renglon:</label><input type="number" id="importeRenglon" required min="0" step="0.01" value="0"></div>
+                    <div class="campo"></div>
+                    <div class="campo"><button type="submit" class="btn-enviar">ENVIAR</button></div>
+                </div>
+            </form>
+        </main>
+        <footer class="pie-form">Pie del formulario</footer>
+    </div>
+</body>
+</html>

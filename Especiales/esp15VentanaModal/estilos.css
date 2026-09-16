@@ -1,0 +1,17 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: "Segoe UI", Arial, sans-serif; }
+#contenedor { min-height: 100vh; background: #b8dce8; padding: 16px 20px; }
+div.ventanaModalApagado { visibility: hidden; }
+div.ventanaModalPrendido { visibility: visible; }
+div.contenedorActivo { opacity: 1; pointer-events: auto; }
+div.contenedorPasivo { opacity: 0.3; pointer-events: none; }
+#ventanaModal { position: fixed; top: 6vh; left: 8vw; width: 84vw; height: 86vh; background: #d7d7d7; border: 2px solid #7a7a7a; z-index: 20; display: flex; flex-direction: column; overflow: hidden; }
+.modal-barra { background: #9a9a9a; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-weight: 700; }
+.cerrar { color: #c0392b; font-size: 1.4rem; font-weight: 700; cursor: pointer; background: none; border: none; }
+.encabezado, .pie { background: #bdbdbd; text-align: center; font-weight: 700; font-size: 1.2rem; padding: 10px; }
+.cuerpo { flex: 1 1 auto; background: #eaf5c8; padding: 16px 24px; overflow: auto; }
+.grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 40px; align-items: end; }
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo input, .campo select { width: 100%; height: 40px; padding: 6px 10px; border: 1px solid #bbb; background: #fff; }
+.btn-enviar { width: 100%; height: 46px; border: 1px solid #b5b5b5; background: #ececec; cursor: pointer; }
+@media (max-width: 800px) { #ventanaModal { left: 3vw; width: 94vw; } .grilla { grid-template-columns: 1fr; } }
