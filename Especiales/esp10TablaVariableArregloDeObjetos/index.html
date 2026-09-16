@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla Variable Arreglo de Objetos</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="../jquery.js"></script>
+    <script src="../datosCompartidos.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <div class="pagina">
+        <div class="barra-superior">
+            <h1>Renglones de factura de ventas</h1>
+            <div class="acciones">
+                <button type="button" id="btCargar">Cargar datos</button>
+                <button type="button" id="btVaciar">Vaciar datos</button>
+            </div>
+        </div>
+        <div class="zona-tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th campo-dato="nroFactura">NroFactura</th>
+                        <th campo-dato="fechaFactura">FechaFactura</th>
+                        <th campo-dato="codArticulo">Cod_articulo</th>
+                        <th campo-dato="descripcion">Descripcion</th>
+                        <th campo-dato="codUm">UM</th>
+                        <th campo-dato="cantidad">Cantidad</th>
+                        <th campo-dato="precioUnitario">Precio_Unitario</th>
+                        <th campo-dato="importeRenglon">Importe_Renglon</th>
+                    </tr>
+                </thead>
+                <tbody id="tbDatos"></tbody>
+                <tfoot>
+                    <tr>
+                        <td campo-dato="nroFactura">sum nroFactura</td>
+                        <td campo-dato="fechaFactura">sum fecha</td>
+                        <td campo-dato="codArticulo">sum cod</td>
+                        <td campo-dato="descripcion">sum descripcion</td>
+                        <td campo-dato="codUm">sum um</td>
+                        <td campo-dato="cantidad">sum cantidad</td>
+                        <td campo-dato="precioUnitario">sum precio</td>
+                        <td campo-dato="importeRenglon">sum importe</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <footer class="pie">Pie</footer>
+    </div>
+</body>
+</html>

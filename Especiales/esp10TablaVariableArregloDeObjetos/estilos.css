@@ -1,0 +1,26 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f4; }
+.pagina { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.barra-superior { flex: 0 0 auto; background: #eaf5c8; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; gap: 12px; }
+.barra-superior h1 { font-size: 1.25rem; font-weight: 700; flex: 1; }
+.acciones { display: flex; gap: 12px; }
+.acciones button { min-width: 140px; height: 42px; border: 1px solid #bdbdbd; background: #ececec; cursor: pointer; }
+.zona-tabla { flex: 1 1 auto; min-height: 0; background: #c9c9c9; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+thead, tfoot { background: #e57373; color: #fff; display: table; width: 100%; table-layout: fixed; }
+thead th, tfoot td { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; padding: 10px 6px; text-align: center; }
+tbody { display: block; overflow-y: auto; height: calc(100vh - 10vh - 88px); background: #cfcfcf; }
+tbody tr { display: table; width: 100%; table-layout: fixed; }
+tbody tr:nth-child(odd) { background: #d8d8d8; }
+tbody tr:nth-child(even) { background: #c4c4c4; }
+tbody td { padding: 8px; font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pie { flex: 0 0 6vh; min-height: 40px; background: #eaf5c8; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+[campo-dato="nroFactura"] { width: 16%; }
+[campo-dato="fechaFactura"] { width: 11%; }
+[campo-dato="codArticulo"] { width: 10%; }
+[campo-dato="descripcion"] { width: 26%; text-align: left; }
+[campo-dato="codUm"] { width: 7%; }
+[campo-dato="cantidad"] { width: 9%; text-align: right; }
+[campo-dato="precioUnitario"] { width: 10%; text-align: right; }
+[campo-dato="importeRenglon"] { width: 11%; text-align: right; }
+@media (max-width: 640px) { [campo-dato="fechaFactura"], [campo-dato="codUm"] { display: none; } }

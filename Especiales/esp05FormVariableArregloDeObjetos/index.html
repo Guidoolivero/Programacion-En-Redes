@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario en Ventana Modal</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="../jquery.js"></script>
+    <script src="../datosCompartidos.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <div class="pagina">
+        <header class="encabezado">
+            <div>Formulario para ALTA</div>
+            <div>Renglones de factura de ventas</div>
+        </header>
+        <main class="cuerpo">
+            <form id="formAlta" action="#" method="get">
+                <div class="grilla">
+                    <div class="campo">
+                        <label for="nroFactura">NroFactura:</label>
+                        <input type="text" id="nroFactura" name="nroFactura" required maxlength="20" placeholder="A-0001-00000001">
+                    </div>
+                    <div class="campo">
+                        <label for="fechaFactura">FechaFactura:</label>
+                        <input type="date" id="fechaFactura" name="fechaFactura" required>
+                    </div>
+                    <div class="campo">
+                        <label for="codArticulo">Cod_articulo:</label>
+                        <input type="text" id="codArticulo" name="codArticulo" required maxlength="12">
+                    </div>
+                    <div class="campo">
+                        <label for="selectUnidadMedida">Unidad de medida:</label>
+                        <select id="selectUnidadMedida" name="unidadMedida" required></select>
+                    </div>
+                    <div class="campo">
+                        <label for="descripcion">Descripcion:</label>
+                        <input type="text" id="descripcion" name="descripcion" required maxlength="80">
+                    </div>
+                    <div class="campo">
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" name="cantidad" required min="0.01" step="0.01" value="0">
+                    </div>
+                    <div class="campo">
+                        <label for="precioUnitario">Precio_Unitario:</label>
+                        <input type="number" id="precioUnitario" name="precioUnitario" required min="0" step="0.01" value="0">
+                    </div>
+                    <div class="campo">
+                        <label for="importeRenglon">Importe_Renglon:</label>
+                        <input type="number" id="importeRenglon" name="importeRenglon" required min="0" step="0.01" value="0">
+                    </div>
+                    <div class="campo"></div>
+                    <div class="campo campo-boton">
+                        <button type="submit" class="btn-enviar">ENVIAR</button>
+                    </div>
+                </div>
+            </form>
+        </main>
+        <footer class="pie">Pie del formulario</footer>
+    </div>
+</body>
+</html>
