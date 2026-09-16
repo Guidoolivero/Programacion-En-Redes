@@ -7,18 +7,21 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: "Segoe UI", Arial, sans-serif; background: #f4efe6; color: #1f2a28; min-height: 100vh; padding: 32px 20px; }
-        .caja { max-width: 720px; margin: 0 auto; background: #fff; border: 1px solid #d7cfc3; border-radius: 10px; padding: 28px; }
+        .caja { max-width: 720px; margin: 0 auto; background: #fff; border: 1px solid #d7cfc3; border-radius: 10px; padding: 28px; display: flex; flex-direction: column; }
+        .btn-volver { display: flex; align-items: center; width: fit-content; padding: 8px 12px; background: #e08a2c; color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.85rem; margin-bottom: 16px; }
+        .btn-volver:hover { background: #c87520; }
         h1 { font-size: 1.4rem; color: #1f4e4a; margin-bottom: 6px; }
         .sub { color: #5c6b68; margin-bottom: 22px; font-size: 0.95rem; }
         ol { list-style: none; }
         ol li { margin-bottom: 10px; }
-        a { display: block; text-decoration: none; color: #1f2a28; background: #f4efe6; border-left: 6px solid #e08a2c; padding: 12px 14px; border-radius: 6px; }
-        a:hover { background: #e8f0ee; }
+        ol a { display: block; text-decoration: none; color: #1f2a28; background: #f4efe6; border-left: 6px solid #e08a2c; padding: 12px 14px; border-radius: 6px; }
+        ol a:hover { background: #e8f0ee; }
         .alumno { margin-top: 22px; font-size: 0.9rem; color: #5c6b68; }
     </style>
 </head>
 <body>
     <div class="caja">
+        <a class="btn-volver" href="../index.html">← Menú principal</a>
         <h1>Ejercicios especiales</h1>
         <p class="sub">JSON, tablas y ventanas modales — Renglones de factura de ventas</p>
         <ol>
@@ -27,7 +30,7 @@
             <li><a href="./esp15VentanaModal/index.html">esp15 — Ventana modal</a></li>
             <li><a href="./esp20TablaFormulario/index.html">esp20 — Tabla y formulario juntos</a></li>
         </ol>
-        <p class="alumno">Alumno: Olivero, Guido — Tabla 11</p>
+        <p class="alumno">Alumno: Guido Olivero — Derechos reservados 2026 — Tabla 11</p>
     </div>
 </body>
 </html>
