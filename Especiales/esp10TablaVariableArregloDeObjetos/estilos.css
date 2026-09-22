@@ -97,7 +97,8 @@ thead th, tfoot td {
 tbody {
     display: block;
     overflow-y: auto;
-    height: calc(100vh - 10vh - 88px);
+    flex: 1 1 auto;
+    min-height: 0;
     background: #fff;
 }
 
@@ -145,6 +146,7 @@ tbody td {
 }
 
 @media (max-width: 640px) {
+    .acciones button { min-width: 0; flex: 1 1 120px; }
     [campo-dato="fechaFactura"],
     [campo-dato="codUm"] { display: none; }
 }
