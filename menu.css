@@ -7,6 +7,9 @@
 body {
   font-family: Arial, sans-serif;
   background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .menu {
@@ -17,13 +20,12 @@ body {
   list-style: none;
 }
 
-/* fila de arriba */
 .menu > ul {
   display: flex;
 }
 
 .menu > ul > li {
-  position: relative; /* origen del submenu */
+  position: relative;
 }
 
 .menu a {
@@ -39,7 +41,6 @@ body {
   background: #1a1a1a;
 }
 
-/* submenu escondido */
 .menu li ul {
   display: none;
   position: absolute;
@@ -52,7 +53,6 @@ body {
   z-index: 10;
 }
 
-/* al pasar el mouse, aparece */
 .menu li:hover > ul {
   display: block;
 }
@@ -61,4 +61,37 @@ body {
   padding: 8px 14px;
   font-size: 13px;
   white-space: nowrap;
+}
+
+.contenido {
+  flex: 1;
+  padding: 24px;
+}
+
+.btn-volver {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  display: inline-block;
+  padding: 8px 14px;
+  background: #2b2b2b;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.btn-volver:hover {
+  background: #1a1a1a;
+}
+
+footer {
+  margin-top: auto;
+  background: #2b2b2b;
+  color: #fff;
+  padding: 14px 18px;
+  font-size: 13px;
 }

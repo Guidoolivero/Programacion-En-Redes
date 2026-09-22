@@ -1,0 +1,46 @@
+Ejercicios especiales JSON y ventanas modales
+Alumno: Olivero, Guido
+Tabla principal: 11) Renglones de factura de ventas
+Tabla auxiliar (select): Unidades de medida (codUM - descripcion)
+
+Como abrir
+-----------
+Opcion A (recomendada, igual que el profesor con XAMPP/htdocs):
+  Copiar la carpeta Especiales a htdocs y entrar a:
+  http://localhost/Especiales/index.html
+
+Opcion B (sin servidor):
+  Abrir index.html con un navegador. Si el navegador bloquea archivos locales,
+  usar un server simple:
+  python3 -m http.server 8080
+  y entrar a http://localhost:8080/
+
+Que hay en cada ejercicio
+-------------------------
+1) esp05FormVariableArregloDeObjetos
+   Formulario de ALTA. El SELECT de Unidad de medida nace vacio
+   y se llena con JSON.parse + forEach creando <option>.
+
+2) esp10TablaVariableArregloDeObjetos
+   Tabla vacia al inicio. Cargar datos parsea el JSON de renglones
+   y crea TR/TD con atributo campo-dato. Vaciar datos usa $("#tbDatos").empty().
+   El scroll esta en el TBODY, no en toda la pagina.
+
+3) esp15VentanaModal
+   Al cargar muestra el ancho de ventana (alert).
+   El boton abre el formulario en un DIV modal.
+   Contenedor principal: opacity 0.3 + pointer-events:none.
+   La X restaura opacity 1 + pointer-events:auto.
+
+4) esp20TablaFormulario  <-- el que el profesor dijo que califica
+   Une los tres anteriores:
+   Cargar datos / Vaciar datos / Cargar Form (abre el modal con el formulario).
+
+Tecnicas usadas (como en los PDF)
+---------------------------------
+- Variable texto JSON + JSON.parse
+- jQuery: $(document).ready, .click, .empty, .attr("class", ...)
+- createElement / setAttribute / appendChild / forEach
+- Clases: contenedorActivo, contenedorPasivo, ventanaModalPrendido, ventanaModalApagado
+- Atributo HTML campo-dato para alinear columnas de thead/tbody/tfoot
+- Layout responsive (2 columnas -> 1 columna)
