@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>PHP 04 — $_SERVER</title>
-  <style>
-    table { border-collapse: collapse; margin-bottom: 20px; }
-    td, th { border: 1px solid #999; padding: 6px 12px; }
-    th { background: #e8f0d8; text-align: left; }
-  </style>
+  <link rel="stylesheet" href="estilo.css">
 </head>
-<body style="padding-top:56px;font-family:Arial,sans-serif;">
-  <a href="../../index.html" style="position:fixed;top:12px;left:12px;z-index:9999;display:inline-block;padding:8px 14px;background:#2b2b2b;color:#fff;text-decoration:none;font-size:13px;border-radius:4px;">Volver al menú</a>
+<body>
+  <a class="btn-volver" href="../../index.html">Volver al menú</a>
   <h2>Variables de servidor</h2>
   <table>
     <tr><th>SERVER_ADDR</th><td><?php echo $_SERVER["SERVER_ADDR"]; ?></td></tr>
@@ -34,9 +30,7 @@
   <h2>TODAS</h2>
 <?php
   foreach ($_SERVER as $clave => $valor) {
-    if (is_array($valor)) {
-      $valor = implode(", ", $valor);
-    }
+    if (is_array($valor)) { $valor = implode(", ", $valor); }
     echo $clave . "=" . $valor . "<br>";
   }
 ?>
