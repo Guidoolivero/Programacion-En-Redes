@@ -1,0 +1,24 @@
+body {
+  font-family: Arial, sans-serif;
+  padding-top: 56px;
+  margin: 24px;
+}
+
+.btn-volver {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  display: inline-block;
+  padding: 8px 14px;
+  background: #2b2b2b;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.titulo-navy { color: navy; }
+
+table { border-collapse: collapse; margin-bottom: 20px; }
+td, th { border: 1px solid #999; padding: 6px 12px; }
