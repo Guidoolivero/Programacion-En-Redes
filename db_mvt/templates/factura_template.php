@@ -82,7 +82,7 @@
   </style>
 </head>
 <body>
-  <a class="btn-volver" href="../index.html">Volver al menú</a>
+  <a class="btn-volver" href="../../index.html">Volver al menú</a>
   <h1>Patrón MVT — Módulo Facturación</h1>
   <p>Alumno: Guido Olivero — Base de datos: <code>if0_42934198_facturacion</code></p>
 
@@ -255,7 +255,6 @@
             container.style.display = 'none';
             btn.disabled = false;
             resultado.innerHTML = html;
-            // Scroll suave hacia el resultado para visualizarlo inmediatamente
             resultado.scrollIntoView({ behavior: 'smooth' });
           })
           .catch(error => {

@@ -1,6 +1,10 @@
 <?php
-// views/listar_facturas.php - Vista modular para consultar/listar renglones de facturas
+// Habilitar reporte de errores para diagnóstico si algo falla
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
+// views/listar_facturas.php - Vista modular para consultar/listar renglones de facturas
 require_once __DIR__ . '/../models/FacturaModel.php';
 
 $model = new FacturaModel();
