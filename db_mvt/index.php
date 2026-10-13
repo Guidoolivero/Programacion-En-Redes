@@ -1,7 +1,4 @@
 <?php
-// Punto de entrada principal que delega a la Vista (MVT)
-
-require_once __DIR__ . '/views/FacturaView.php';
-
-$app = new FacturaView();
-$app->render();
+// index.php redirige a la vista modular por defecto (listar_facturas.php)
+header('Location: views/listar_facturas.php');
+exit;

@@ -7,6 +7,8 @@
     body { font-family: Arial, sans-serif; margin: 24px; background: #f9f9f9; }
     h1, h2 { color: #333; }
     .btn-volver { display: inline-block; margin-bottom: 15px; padding: 6px 12px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+    .nav-vistas { margin-bottom: 20px; }
+    .nav-vistas a { margin-right: 15px; color: #007bff; text-decoration: none; font-weight: bold; }
     form { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 500px; }
     form p { margin-bottom: 12px; }
     label { display: block; font-weight: bold; margin-bottom: 4px; }
@@ -27,6 +29,12 @@
   <a class="btn-volver" href="../index.html">Volver al menú</a>
   <h1>Patrón MVT — Módulo Facturación</h1>
   <p>Alumno: Guido Olivero — Base de datos: <code>if0_42934198_facturacion</code></p>
+
+  <div class="nav-vistas">
+    <span>Vistas modulares:</span>
+    <a href="listar_facturas.php">Vista: Listar Facturas</a>
+    <a href="listar_unidades.php">Vista: Unidades de Medida</a>
+  </div>
 
   <h2>Formulario de Carga (Template / Validaciones + AJAX con timer 5s)</h2>
   <form id="formRenglon">
@@ -150,8 +158,8 @@
           clearInterval(intervalo);
           segSpan.textContent = '0 (conectando y enviando por AJAX...)';
 
-          // Disparo de la petición asincrónica AJAX (fetch) tras los 5 segundos
-          fetch('index.php', {
+          // Disparo hacia la vista modular guardar_renglon.php tras los 5 segundos
+          fetch('guardar_renglon.php', {
             method: 'POST',
             body: formData
           })
