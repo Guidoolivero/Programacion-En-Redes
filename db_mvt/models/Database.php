@@ -22,13 +22,7 @@ class Database {
                     ]
                 );
             } catch (PDOException $e) {
-                // En vez de json_encode y exit mudo en peticiones GET, lanzamos o registramos el error
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    http_response_code(500);
-                    echo "<p style='color:red;'>Error de conexión PDO: " . htmlspecialchars($e->getMessage()) . "</p>";
-                    exit;
-                }
-                // Si es GET que cargue la página aunque muestre el aviso
+                // Devolver null para que el llamador pueda atraparlo o mostrar error
                 return null;
             }
         }

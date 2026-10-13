@@ -1,5 +1,5 @@
 <?php
-// views/guardar_renglon.php - Vista modular exclusivamente para recibir el AJAX POST, validar y persistir
+// views/guardar_renglon.php - Vista modular para validar, verificar duplicados e insertar/actualizar en BD
 
 require_once __DIR__ . '/../models/FacturaModel.php';
 
@@ -64,11 +64,11 @@ if (!empty($errores)) {
     exit;
 }
 
-// Procesar datos validados
 $nroFactura     = (int)$nroFacturaRaw;
 $cantidad       = (float)$cantidadRaw;
 $precioUnitario = (float)$precioRaw;
 $importeRenglon = $cantidad * $precioUnitario;
+$modoEdicion    = isset($_POST['modoEdicion']) && $_POST['modoEdicion'] === '1';
 
 $datos = [
     'nroFactura'     => $nroFactura,
@@ -81,22 +81,33 @@ $datos = [
 ];
 
 $model = new FacturaModel();
-$dbSuccess = false;
-try {
-    $dbSuccess = $model->insertarRenglon($datos);
-} catch (Exception $e) {
-    $dbSuccess = false;
+
+// Verificación de unicidad: Si no es edición y ya existe el Nro de Factura, rechazar
+if (!$modoEdicion && $model->existeFactura($nroFactura)) {
+    echo "<div class='error-box'>";
+    echo "<h4>⚠️ Factura duplicada:</h4>";
+    echo "<p>El Nro de Factura <b>{$nroFactura}</b> ya se encuentra registrado en la base de datos. Cada factura debe ser única.</p>";
+    echo "</div>";
+    exit;
 }
 
-// Devolver tabla HTML de respuesta por AJAX tal como en los ejercicios
+$errorBD = '';
+if ($modoEdicion) {
+    $dbSuccess = $model->actualizarRenglon($datos, $errorBD);
+    $accionTexto = "modificado";
+} else {
+    $dbSuccess = $model->insertarRenglon($datos, $errorBD);
+    $accionTexto = "insertado";
+}
+
 echo "<h3>Respuesta recibida por AJAX (completado tras el timer de 5s)</h3>";
 if ($dbSuccess) {
-    echo "<p style='color: green; font-weight: bold;'>✔ Registro insertado correctamente en InfinityFree.</p>";
+    echo "<p style='color: green; font-weight: bold;'>✔ Registro {$accionTexto} correctamente en la base de datos de InfinityFree.</p>";
 } else {
-    echo "<p style='color: #856404; background: #fff3cd; padding: 6px; border-radius: 4px;'>ℹ Datos recibidos y validados con éxito (aviso: la base remota no confirmó la inserción).</p>";
+    echo "<p style='color: red; font-weight: bold;'>✖ Error al persistir en la base de datos: " . htmlspecialchars($errorBD) . "</p>";
 }
 
-echo "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse: collapse;'>";
+echo "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse: collapse; width:100%;'>";
 echo "<tr><th>Nro Factura</th><td>{$datos['nroFactura']}</td></tr>";
 echo "<tr><th>Fecha</th><td>{$datos['fechaFactura']}</td></tr>";
 echo "<tr><th>Cód. Artículo</th><td>{$datos['codArticulo']}</td></tr>";
@@ -106,4 +117,3 @@ echo "<tr><th>Cantidad</th><td>{$datos['cantidad']}</td></tr>";
 echo "<tr><th>Precio Unitario</th><td>{$datos['precioUnitario']}</td></tr>";
 echo "<tr><th>Importe Renglón</th><td>{$importeRenglon}</td></tr>";
 echo "</table>";
-echo "<p><em>La página no se recargó (asincrónico vía AJAX).</em></p>";
