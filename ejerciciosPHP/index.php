@@ -23,6 +23,9 @@
     <li><a href="07-form-unico/index.php">Formulario en un solo PHP (Renglones factura ventas)</a></li>
     <li><a href="08-hash/index.php">Hash md5 / sha1</a></li>
     <li><a href="09-objeto-json/index.php">Objeto desde formulario + JSON</a></li>
+    <li><a href="10-ajax-renglones/index.html">AJAX — Renglones de factura (fetch + FormData)</a></li>
+    <li><a href="11-ajax-hash/index.html">AJAX — Hash md5 / sha1</a></li>
+    <li><a href="12-ajax-objeto/index.html">AJAX — Objeto + JSON</a></li>
   </ol>
 </body>
 </html>
