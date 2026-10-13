@@ -20,9 +20,9 @@
   </ol>
   <h2>Parte 2</h2>
   <ol start="7">
-    <li><a href="07-form-unico/index.html">Formulario con AJAX (Renglones factura ventas)</a></li>
-    <li><a href="08-hash/index.html">Hash md5 / sha1 con AJAX</a></li>
-    <li><a href="09-objeto-json/index.html">Objeto desde formulario + JSON con AJAX</a></li>
+    <li><a href="07-form-unico/index.php">Formulario con AJAX en un solo PHP (Renglones factura)</a></li>
+    <li><a href="08-hash/index.php">Hash md5 / sha1 con AJAX (un solo PHP)</a></li>
+    <li><a href="09-objeto-json/index.php">Objeto + JSON con AJAX (un solo PHP)</a></li>
   </ol>
 </body>
 </html>
