@@ -33,13 +33,12 @@ class FacturaModel {
     public function existeFactura($nroFactura) {
         if (!$this->pdo) return false;
         try {
-            // Buscamos si ya existe ese nroFactura
             $stmtCols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura");
             $cols = $stmtCols->fetchAll(PDO::FETCH_COLUMN);
             $colNro = in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : $cols[0]);
 
-            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM renglones_factura WHERE $colNro = :nro");
-            $stmt->execute([':nro' => $nroFactura]);
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM renglones_factura WHERE `$colNro` = ?");
+            $stmt->execute([$nroFactura]);
             return ((int)$stmt->fetchColumn()) > 0;
         } catch (PDOException $e) {
             return false;
@@ -64,23 +63,24 @@ class FacturaModel {
             $colPrec = in_array('precioUnitario', $cols) ? 'precioUnitario' : (in_array('precio_unitario', $cols) ? 'precio_unitario' : $cols[6]);
             $colImp = in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : (isset($cols[7]) ? $cols[7] : null)));
 
-            $fields = [$colNro, $colFecha, $colCod, $colDesc, $colUm, $colCant, $colPrec];
+            $fields = ["`$colNro`", "`$colFecha`", "`$colCod`", "`$colDesc`", "`$colUm`", "`$colCant`", "`$colPrec`"];
             $params = [
-                ":$colNro"  => $datos['nroFactura'],
-                ":$colFecha"=> $datos['fechaFactura'],
-                ":$colCod"  => $datos['codArticulo'],
-                ":$colDesc" => $datos['descripcion'],
-                ":$colUm"   => $datos['unidadMedida'],
-                ":$colCant" => $datos['cantidad'],
-                ":$colPrec" => $datos['precioUnitario'],
+                $datos['nroFactura'],
+                $datos['fechaFactura'],
+                $datos['codArticulo'],
+                $datos['descripcion'],
+                $datos['unidadMedida'],
+                $datos['cantidad'],
+                $datos['precioUnitario'],
             ];
 
             if ($colImp) {
-                $fields[] = $colImp;
-                $params[":$colImp"] = $datos['cantidad'] * $datos['precioUnitario'];
+                $fields[] = "`$colImp`";
+                $params[] = $datos['cantidad'] * $datos['precioUnitario'];
             }
 
-            $sql = "INSERT INTO renglones_factura (" . implode(', ', $fields) . ") VALUES (" . implode(', ', array_keys($params)) . ")";
+            $placeholders = implode(', ', array_fill(0, count($fields), '?'));
+            $sql = "INSERT INTO renglones_factura (" . implode(', ', $fields) . ") VALUES ($placeholders)";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute($params);
         } catch (PDOException $e) {
@@ -99,8 +99,8 @@ class FacturaModel {
             $cols = $stmtCols->fetchAll(PDO::FETCH_COLUMN);
             $colNro = in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : $cols[0]);
 
-            $stmt = $this->pdo->prepare("DELETE FROM renglones_factura WHERE $colNro = :nro");
-            return $stmt->execute([':nro' => $nroFactura]);
+            $stmt = $this->pdo->prepare("DELETE FROM renglones_factura WHERE `$colNro` = ?");
+            return $stmt->execute([$nroFactura]);
         } catch (PDOException $e) {
             $errorMsg = $e->getMessage();
             return false;
@@ -126,29 +126,31 @@ class FacturaModel {
             $colImp = in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : (isset($cols[7]) ? $cols[7] : null)));
 
             $sets = [
-                "$colFecha = :$colFecha",
-                "$colCod = :$colCod",
-                "$colDesc = :$colDesc",
-                "$colUm = :$colUm",
-                "$colCant = :$colCant",
-                "$colPrec = :$colPrec",
+                "`$colFecha` = ?",
+                "`$colCod` = ?",
+                "`$colDesc` = ?",
+                "`$colUm` = ?",
+                "`$colCant` = ?",
+                "`$colPrec` = ?",
             ];
             $params = [
-                ":$colNro"  => $datos['nroFactura'],
-                ":$colFecha"=> $datos['fechaFactura'],
-                ":$colCod"  => $datos['codArticulo'],
-                ":$colDesc" => $datos['descripcion'],
-                ":$colUm"   => $datos['unidadMedida'],
-                ":$colCant" => $datos['cantidad'],
-                ":$colPrec" => $datos['precioUnitario'],
+                $datos['fechaFactura'],
+                $datos['codArticulo'],
+                $datos['descripcion'],
+                $datos['unidadMedida'],
+                $datos['cantidad'],
+                $datos['precioUnitario'],
             ];
 
             if ($colImp) {
-                $sets[] = "$colImp = :$colImp";
-                $params[":$colImp"] = $datos['cantidad'] * $datos['precioUnitario'];
+                $sets[] = "`$colImp` = ?";
+                $params[] = $datos['cantidad'] * $datos['precioUnitario'];
             }
 
-            $sql = "UPDATE renglones_factura SET " . implode(', ', $sets) . " WHERE $colNro = :$colNro";
+            // El último parámetro posicional es para el WHERE
+            $params[] = $datos['nroFactura'];
+
+            $sql = "UPDATE renglones_factura SET " . implode(', ', $sets) . " WHERE `$colNro` = ?";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute($params);
         } catch (PDOException $e) {
