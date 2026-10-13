@@ -11,6 +11,7 @@
     form p { margin-bottom: 12px; }
     label { display: block; font-weight: bold; margin-bottom: 4px; }
     input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    input:invalid { border-color: #dc3545; }
     button { background: #28a745; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
     button:hover { background: #218838; }
     button:disabled { background: #6c757d; cursor: not-allowed; }
@@ -19,6 +20,7 @@
     th { background: #f2f2f2; }
     #progreso { display: none; margin-top: 15px; padding: 12px; background: #e8f4fd; border: 1px solid #b8daff; border-radius: 4px; color: #004085; font-weight: bold; }
     #resultado { margin-top: 20px; }
+    .error-box { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; border: 1px solid #f5c6cb; margin-bottom: 15px; }
   </style>
 </head>
 <body>
@@ -26,11 +28,11 @@
   <h1>Patrón MVT — Módulo Facturación</h1>
   <p>Alumno: Guido Olivero — Base de datos: <code>if0_42934198_facturacion</code></p>
 
-  <h2>Formulario de Carga (Template / AJAX con retardo de 5s)</h2>
+  <h2>Formulario de Carga (Template / Validaciones + AJAX con timer 5s)</h2>
   <form id="formRenglon">
     <p>
-      <label>Nro Factura:</label>
-      <input type="text" name="nroFactura" required>
+      <label>Nro Factura (Solo enteros positivos):</label>
+      <input type="number" name="nroFactura" min="1" step="1" required placeholder="Ej: 1001">
     </p>
     <p>
       <label>Fecha Factura:</label>
@@ -38,15 +40,16 @@
     </p>
     <p>
       <label>Cód. Artículo:</label>
-      <input type="text" name="codArticulo" required>
+      <input type="text" name="codArticulo" maxlength="50" required placeholder="Ej: ART-01">
     </p>
     <p>
       <label>Descripción:</label>
-      <input type="text" name="descripcion" required>
+      <input type="text" name="descripcion" maxlength="255" required placeholder="Ej: Monitor LED 24 pulgadas">
     </p>
     <p>
       <label>Unidad de Medida (Cargada desde BD):</label>
-      <select name="unidadMedida">
+      <select name="unidadMedida" required>
+        <option value="" disabled selected>-- Seleccione unidad --</option>
         <?php if (!empty($unidades)): ?>
           <?php foreach ($unidades as $u): ?>
             <option value="<?= htmlspecialchars($u['codigo'] ?? $u['id'] ?? $u['descripcion'] ?? $u['unidad_medida']) ?>">
@@ -62,12 +65,12 @@
       </select>
     </p>
     <p>
-      <label>Cantidad:</label>
-      <input type="number" name="cantidad" step="0.01" required>
+      <label>Cantidad (Mayor a 0):</label>
+      <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="Ej: 5">
     </p>
     <p>
-      <label>Precio Unitario:</label>
-      <input type="number" name="precioUnitario" step="0.01" required>
+      <label>Precio Unitario (Mayor a 0):</label>
+      <input type="number" name="precioUnitario" min="0.01" step="0.01" required placeholder="Ej: 150.50">
     </p>
     <p>
       <button type="submit" id="btnEnviar">Enviar con AJAX</button>
@@ -117,6 +120,12 @@
   <script>
     document.getElementById('formRenglon').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // Validación nativa HTML5 en JavaScript antes de arrancar el timer
+      if (!this.checkValidity()) {
+        this.reportValidity();
+        return;
+      }
 
       const btn = document.getElementById('btnEnviar');
       const progreso = document.getElementById('progreso');
