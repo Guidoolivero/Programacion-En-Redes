@@ -96,6 +96,7 @@
     <span>Vistas modulares:</span>
     <a href="listar_facturas.php">Vista: Listar Facturas</a>
     <a href="listar_unidades.php">Vista: Unidades de Medida</a>
+    <a href="../errores.txt" target="_blank" style="color: #6c757d;">📄 Ver Log de Errores (errores.txt)</a>
   </div>
 
   <h2 id="tituloForm">Formulario de Carga (Template / Validaciones + AJAX)</h2>
@@ -300,7 +301,6 @@
       }, 1000);
     });
 
-    // Función segura que lee los datos desde los atributos data-* de la fila (inmune a comillas en descripciones)
     function prepararEdicionDesdeFila(boton) {
       const fila = boton.closest('tr');
       const nro = fila.getAttribute('data-nro');

@@ -2,6 +2,7 @@
 // views/guardar_renglon.php - Vista modular para validar, verificar duplicados e insertar/actualizar en BD
 
 require_once __DIR__ . '/../models/FacturaModel.php';
+require_once __DIR__ . '/../models/logger.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -53,8 +54,9 @@ if ($precioRaw === '' || !is_numeric($precioRaw) || (float)$precioRaw <= 0) {
     $errores[] = "El Precio Unitario es obligatorio y debe ser mayor a cero (sin valores negativos).";
 }
 
-// Si hay errores de validación, devolver mensaje de error
+// Si hay errores de validación, registrar en log y devolver mensaje de error
 if (!empty($errores)) {
+    registrarError("Errores de validación en formulario: " . implode(' | ', $errores), 'VALIDACION_FORM');
     echo "<div class='error-box'>";
     echo "<h4>⚠️ Errores de validación en el servidor:</h4><ul>";
     foreach ($errores as $err) {
@@ -84,6 +86,7 @@ $model = new FacturaModel();
 
 // Verificación de unicidad: Si no es edición y ya existe el Nro de Factura, rechazar
 if (!$modoEdicion && $model->existeFactura($nroFactura)) {
+    registrarError("Intento de insertar factura duplicada Nro: $nroFactura", 'UNICIDAD_DUPLICADO');
     echo "<div class='error-box'>";
     echo "<h4>⚠️ Factura duplicada:</h4>";
     echo "<p>El Nro de Factura <b>{$nroFactura}</b> ya se encuentra registrado en la base de datos. Cada factura debe ser única.</p>";
@@ -104,6 +107,7 @@ echo "<h3>Respuesta recibida por AJAX (completado tras el timer de 5s)</h3>";
 if ($dbSuccess) {
     echo "<p style='color: green; font-weight: bold;'>✔ Registro {$accionTexto} correctamente en la base de datos de InfinityFree.</p>";
 } else {
+    registrarError("Fallo en base de datos al $accionTexto factura $nroFactura: $errorBD", 'BD_PERSISTENCIA');
     echo "<p style='color: red; font-weight: bold;'>✖ Error al persistir en la base de datos: " . htmlspecialchars($errorBD) . "</p>";
 }
 

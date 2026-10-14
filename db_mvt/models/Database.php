@@ -1,6 +1,8 @@
 <?php
 // models/Database.php - Manejo de conexión PDO a InfinityFree
 
+require_once __DIR__ . '/logger.php';
+
 class Database {
     private static $host = 'sql111.infinityfree.com';
     private static $dbname = 'if0_42934198_facturacion';
@@ -22,7 +24,7 @@ class Database {
                     ]
                 );
             } catch (PDOException $e) {
-                // Devolver null para que el llamador pueda atraparlo o mostrar error
+                registrarError("Error de conexión PDO: " . $e->getMessage(), 'DATABASE');
                 return null;
             }
         }

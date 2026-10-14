@@ -2,6 +2,7 @@
 // models/FacturaModel.php - Modelo para interactuar con las tablas de la BD
 
 require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/logger.php';
 
 class FacturaModel {
     private $pdo;
@@ -16,6 +17,7 @@ class FacturaModel {
             $stmt = $this->pdo->query("SELECT * FROM unidades_medida");
             return $stmt->fetchAll();
         } catch (PDOException $e) {
+            registrarError("Error al consultar unidades_medida: " . $e->getMessage(), 'MODEL_SELECT');
             return [];
         }
     }
@@ -26,6 +28,7 @@ class FacturaModel {
             $stmt = $this->pdo->query("SELECT * FROM renglones_factura ORDER BY 1 DESC");
             return $stmt->fetchAll();
         } catch (PDOException $e) {
+            registrarError("Error al consultar renglones_factura: " . $e->getMessage(), 'MODEL_SELECT');
             return [];
         }
     }
@@ -41,6 +44,7 @@ class FacturaModel {
             $stmt->execute([$nroFactura]);
             return ((int)$stmt->fetchColumn()) > 0;
         } catch (PDOException $e) {
+            registrarError("Error al verificar existencia de factura $nroFactura: " . $e->getMessage(), 'MODEL_SELECT');
             return false;
         }
     }
@@ -48,6 +52,7 @@ class FacturaModel {
     public function insertarRenglon($datos, &$errorMsg = null) {
         if (!$this->pdo) {
             $errorMsg = "No hay conexión PDO activa con la base de datos.";
+            registrarError("Fallo al insertar renglón: $errorMsg", 'MODEL_INSERT');
             return false;
         }
         try {
@@ -85,6 +90,7 @@ class FacturaModel {
             return $stmt->execute($params);
         } catch (PDOException $e) {
             $errorMsg = $e->getMessage();
+            registrarError("Error SQL al insertar factura {$datos['nroFactura']}: $errorMsg", 'MODEL_INSERT');
             return false;
         }
     }
@@ -92,6 +98,7 @@ class FacturaModel {
     public function eliminarRenglon($nroFactura, &$errorMsg = null) {
         if (!$this->pdo) {
             $errorMsg = "Sin conexión con la BD.";
+            registrarError("Fallo al eliminar renglón $nroFactura: $errorMsg", 'MODEL_DELETE');
             return false;
         }
         try {
@@ -103,6 +110,7 @@ class FacturaModel {
             return $stmt->execute([$nroFactura]);
         } catch (PDOException $e) {
             $errorMsg = $e->getMessage();
+            registrarError("Error SQL al eliminar factura $nroFactura: $errorMsg", 'MODEL_DELETE');
             return false;
         }
     }
@@ -110,6 +118,7 @@ class FacturaModel {
     public function actualizarRenglon($datos, &$errorMsg = null) {
         if (!$this->pdo) {
             $errorMsg = "Sin conexión con la BD.";
+            registrarError("Fallo al actualizar renglón {$datos['nroFactura']}: $errorMsg", 'MODEL_UPDATE');
             return false;
         }
         try {
@@ -147,7 +156,6 @@ class FacturaModel {
                 $params[] = $datos['cantidad'] * $datos['precioUnitario'];
             }
 
-            // El último parámetro posicional es para el WHERE
             $params[] = $datos['nroFactura'];
 
             $sql = "UPDATE renglones_factura SET " . implode(', ', $sets) . " WHERE `$colNro` = ?";
@@ -155,6 +163,7 @@ class FacturaModel {
             return $stmt->execute($params);
         } catch (PDOException $e) {
             $errorMsg = $e->getMessage();
+            registrarError("Error SQL al actualizar factura {$datos['nroFactura']}: $errorMsg", 'MODEL_UPDATE');
             return false;
         }
     }
