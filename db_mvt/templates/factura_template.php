@@ -197,7 +197,14 @@
             $pre = htmlspecialchars($r['precioUnitario'] ?? $r['precio_unitario'] ?? '');
             $imp = htmlspecialchars($r['importeRenglon'] ?? $r['importe_renglon'] ?? $r['importe'] ?? '');
           ?>
-          <tr id="row-<?= $nro ?>">
+          <tr id="row-<?= $nro ?>"
+              data-nro="<?= $nro ?>"
+              data-fecha="<?= $fec ?>"
+              data-art="<?= $art ?>"
+              data-desc="<?= $des ?>"
+              data-um="<?= $um ?>"
+              data-cant="<?= $cnt ?>"
+              data-precio="<?= $pre ?>">
             <td><?= $nro ?></td>
             <td><?= $fec ?></td>
             <td><?= $art ?></td>
@@ -207,7 +214,7 @@
             <td><?= $pre ?></td>
             <td><?= $imp ?></td>
             <td>
-              <button class="btn-tabla-edit" onclick="prepararEdicion('<?= $nro ?>', '<?= $fec ?>', '<?= $art ?>', '<?= $des ?>', '<?= $um ?>', '<?= $cnt ?>', '<?= $pre ?>')">Editar</button>
+              <button class="btn-tabla-edit" onclick="prepararEdicionDesdeFila(this)">Editar</button>
               <button class="btn-tabla-del" onclick="eliminarFactura('<?= $nro ?>')">Eliminar</button>
             </td>
           </tr>
@@ -219,7 +226,6 @@
   </table>
 
   <script>
-    // Formulario de inserción / edición con AJAX y timer de 5s
     document.getElementById('formRenglon').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -279,7 +285,6 @@
             resultado.innerHTML = html;
             resultado.scrollIntoView({ behavior: 'smooth' });
 
-            // Si se guardó exitosamente, actualizar la tabla o recargar
             if (html.includes('correctamente')) {
               setTimeout(() => {
                 window.location.reload();
@@ -295,8 +300,17 @@
       }, 1000);
     });
 
-    // Función para editar un renglón
-    function prepararEdicion(nro, fecha, codArt, desc, um, cant, precio) {
+    // Función segura que lee los datos desde los atributos data-* de la fila (inmune a comillas en descripciones)
+    function prepararEdicionDesdeFila(boton) {
+      const fila = boton.closest('tr');
+      const nro = fila.getAttribute('data-nro');
+      const fecha = fila.getAttribute('data-fecha');
+      const codArt = fila.getAttribute('data-art');
+      const desc = fila.getAttribute('data-desc');
+      const um = fila.getAttribute('data-um');
+      const cant = fila.getAttribute('data-cant');
+      const precio = fila.getAttribute('data-precio');
+
       document.getElementById('tituloForm').textContent = 'Editar Renglón Nro: ' + nro;
       document.getElementById('modoEdicion').value = '1';
       document.getElementById('fNroFactura').value = nro;
@@ -313,7 +327,6 @@
       document.getElementById('formRenglon').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Cancelar modo edición
     function cancelarEdicion() {
       document.getElementById('tituloForm').textContent = 'Formulario de Carga (Template / Validaciones + AJAX)';
       document.getElementById('modoEdicion').value = '0';
@@ -323,7 +336,6 @@
       document.getElementById('btnCancelarEdicion').style.display = 'none';
     }
 
-    // Eliminar renglón en la web y en la base de datos por AJAX
     function eliminarFactura(nroFactura) {
       if (!confirm('¿Seguro que deseas eliminar la factura ' + nroFactura + ' de la base de datos?')) {
         return;
