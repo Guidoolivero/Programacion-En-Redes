@@ -23,7 +23,10 @@
     <li><a href="07-form-unico/index.php">Formulario con AJAX en un solo PHP (Renglones factura)</a></li>
     <li><a href="08-hash/index.php">Hash md5 / sha1 con AJAX (un solo PHP)</a></li>
     <li><a href="09-objeto-json/index.php">Objeto + JSON con AJAX (un solo PHP)</a></li>
-    <li><a href="../db_mvt/index.php">Base de Datos — Patrón MVT (InfinityFree + AJAX + Timer 5s)</a></li>
+  </ol>
+  <h2>Base de datos</h2>
+  <ol start="10">
+    <li><a href="10-listado-orden-filtro/index.php">Listado + Orden + Filtros (Renglones de factura)</a></li>
   </ol>
 </body>
 </html>
