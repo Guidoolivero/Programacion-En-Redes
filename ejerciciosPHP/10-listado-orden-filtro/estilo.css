@@ -1,0 +1,16 @@
+body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5dc; padding-top: 50px; }
+h1 { text-align: center; }
+.btn-volver { position: fixed; top: 10px; left: 10px; background: #333; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; z-index: 1000; }
+.controles { text-align: right; margin-bottom: 10px; }
+.controles input { width: 120px; }
+.controles button { padding: 6px 12px; margin-left: 6px; }
+.tabla-wrap { max-height: 420px; overflow-y: auto; border: 1px solid #ccc; }
+table { width: 100%; border-collapse: collapse; background: #ddd; }
+thead { position: sticky; top: 0; }
+.titulos th { background: #e07070; color: #222; padding: 8px; cursor: pointer; }
+.filtros td { background: #e07070; padding: 4px; }
+.filtros input, .filtros select { width: 100%; box-sizing: border-box; }
+tbody td { padding: 6px 8px; border-bottom: 1px solid #bbb; }
+tbody tr:nth-child(even) { background: #c8c8c8; }
+tfoot td { background: #e07070; font-weight: bold; padding: 8px; }
+footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10px; }
