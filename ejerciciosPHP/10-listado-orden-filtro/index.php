@@ -51,8 +51,9 @@
         const data = JSON.parse(texto);
         const select = document.getElementById('f_unidadMedida');
         (data.unidades || []).forEach(u => {
-          const val = u.codigo || u.codUm || u.cod_um || u.id || u.descripcion || '';
-          const nom = u.descripcion || u.descripcionUm || u.nombre || val;
+          const vals = Object.values(u);
+          const val = u.codigo || u.codUm || u.cod_um || u.unidadMedida || u.unidad_medida || u.id || vals[0] || '';
+          const nom = u.descripcion || u.descripcionUm || u.descripcion_um || u.nombre || vals[1] || val;
           const opt = document.createElement('option');
           opt.value = val; opt.textContent = nom;
           select.appendChild(opt);
@@ -86,7 +87,17 @@
     function pintar(filas) {
       const tbody = document.getElementById('cuerpo');
       if (!filas.length) { tbody.innerHTML = '<tr><td colspan="8">Sin resultados.</td></tr>'; return; }
-      tbody.innerHTML = filas.map(r => `<tr><td>${r.nroFactura??''}</td><td>${r.codArticulo??''}</td><td>${r.unidadMedida??''}</td><td>${r.descripcion??''}</td><td>${r.fechaFactura??''}</td><td>${r.cantidad??''}</td><td>${r.precioUnitario??''}</td><td>${r.importeRenglon??''}</td></tr>`).join('');
+      tbody.innerHTML = filas.map(r => {
+        const nro  = r.nroFactura ?? r.nro_factura ?? '';
+        const cod  = r.codArticulo ?? r.cod_articulo ?? '';
+        const um   = r.unidadMedida ?? r.unidad_medida ?? r.codUm ?? r.cod_um ?? r.um ?? r.id_unidad ?? '';
+        const desc = r.descripcion ?? '';
+        const fec  = r.fechaFactura ?? r.fecha_factura ?? r.fecha ?? '';
+        const cant = r.cantidad ?? '';
+        const prec = r.precioUnitario ?? r.precio_unitario ?? r.precio ?? '';
+        const imp  = r.importeRenglon ?? r.importe_renglon ?? r.importe ?? '';
+        return `<tr><td>${nro}</td><td>${cod}</td><td>${um}</td><td>${desc}</td><td>${fec}</td><td>${cant}</td><td>${prec}</td><td>${imp}</td></tr>`;
+      }).join('');
     }
     function vaciar() {
       document.getElementById('cuerpo').innerHTML = '<tr><td colspan="8">Sin datos.</td></tr>';
