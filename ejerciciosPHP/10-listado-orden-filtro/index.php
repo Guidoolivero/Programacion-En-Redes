@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <a class="btn-volver" href="../index.php">Volver al menú</a>
+  <a class="btn-volver" href="../../index.html">Volver al menú</a>
   <h1>Renglones de factura de ventas</h1>
   <p>Alumno: Guido Olivero — Tabla 11</p>
   <div class="controles">
