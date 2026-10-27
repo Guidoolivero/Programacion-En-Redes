@@ -38,7 +38,6 @@ class RenglonesModel {
         }
 
         try {
-            // Detectar nombres reales de columnas en MySQL
             $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
             $colNro   = in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : ($cols[0] ?? 'nroFactura'));
             $colFecha = in_array('fechaFactura', $cols) ? 'fechaFactura' : (in_array('fecha_factura', $cols) ? 'fecha_factura' : (in_array('fecha', $cols) ? 'fecha' : ($cols[1] ?? 'fechaFactura')));
@@ -48,6 +47,7 @@ class RenglonesModel {
             $colCant  = in_array('cantidad', $cols) ? 'cantidad' : ($cols[5] ?? 'cantidad');
             $colPrec  = in_array('precioUnitario', $cols) ? 'precioUnitario' : (in_array('precio_unitario', $cols) ? 'precio_unitario' : ($cols[6] ?? 'precioUnitario'));
             $colImp   = in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : ($cols[7] ?? 'importeRenglon')));
+            $colPdf   = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : (in_array('pdf', $cols) ? 'pdf' : null));
 
             $mapaOrden = [
                 'nroFactura'     => $colNro,
@@ -82,10 +82,11 @@ class RenglonesModel {
             $stmt->execute($params);
             $filasRaw = $stmt->fetchAll();
 
-            $filas = array_map(function($r) use ($colNro, $colCod, $colUm, $colDesc, $colFecha, $colCant, $colPrec, $colImp) {
+            $filas = array_map(function($r) use ($colNro, $colCod, $colUm, $colDesc, $colFecha, $colCant, $colPrec, $colImp, $colPdf) {
                 $cant = $r[$colCant] ?? '';
                 $prec = $r[$colPrec] ?? '';
                 $imp  = $r[$colImp] ?? (($cant !== '' && $prec !== '') ? number_format((float)$cant * (float)$prec, 2, '.', '') : '');
+                $tienePdf = ($colPdf && !empty($r[$colPdf])) ? 1 : 0;
                 return [
                     'nroFactura'     => $r[$colNro] ?? '',
                     'codArticulo'    => $r[$colCod] ?? '',
@@ -95,6 +96,7 @@ class RenglonesModel {
                     'cantidad'       => $cant,
                     'precioUnitario' => $prec,
                     'importeRenglon' => $imp,
+                    'tienePdf'       => $tienePdf,
                 ];
             }, $filasRaw);
 
@@ -105,90 +107,186 @@ class RenglonesModel {
         }
     }
 
-    public function insertarRenglon($datos, &$traza = '') {
+    public function insertarRenglon($datos, &$traza = '', $archivoPdf = null) {
         if (!$this->pdo) {
-            $traza = "Error: Sin conexión con la base de datos";
+            $traza = "No se pudo conectar a la base de datos.";
             return false;
         }
-        $traza .= "Conexion exitosa<br>";
+
+        $nro     = $datos['nroFactura'] ?? '';
+        $fecha   = $datos['fechaFactura'] ?? '';
+        $cod     = $datos['codArticulo'] ?? '';
+        $desc    = $datos['descripcion'] ?? '';
+        $um      = $datos['unidadMedida'] ?? '';
+        $cant    = (float)($datos['cantidad'] ?? 0);
+        $precio  = (float)($datos['precioUnitario'] ?? 0);
+        $importe = $cant * $precio;
+
+        $traza .= "Respuesta del servidor al alta. Entradas recibidas en el req http:\n";
+        $traza .= "nroFactura: " . $nro . "\n";
+        $traza .= "codArticulo: " . $cod . "\n";
+        $traza .= "fechaFactura: " . $fecha . "\n";
+        $traza .= "unidadMedida: " . $um . "\n";
+        $traza .= "descripcion: " . $desc . "\n";
+        $traza .= "cantidad: " . $cant . "\n";
+        $traza .= "precioUnitario: " . $precio . "\n";
+        $traza .= "importeRenglon: " . $importe . "\n";
 
         try {
-            $nro     = $datos['nroFactura'] ?? '';
-            $fecha   = $datos['fechaFactura'] ?? '';
-            $cod     = $datos['codArticulo'] ?? '';
-            $desc    = $datos['descripcion'] ?? '';
-            $um      = $datos['unidadMedida'] ?? '';
-            $cant    = (float)($datos['cantidad'] ?? 0);
-            $precio  = (float)($datos['precioUnitario'] ?? 0);
-            $importe = $cant * $precio;
-
-            $sql = "INSERT INTO renglones_factura (nroFactura, fechaFactura, codArticulo, descripcion, unidadMedida, cantidad, precioUnitario, importeRenglon) VALUES (?,?,?,?,?,?,?,?)";
+            $sql = "INSERT INTO renglones_factura (nroFactura, fechaFactura, codArticulo, descripcion, unidadMedida, cantidad, precioUnitario, importeRenglon) VALUES (:nroFactura, :fechaFactura, :codArticulo, :descripcion, :unidadMedida, :cantidad, :precioUnitario, :importeRenglon)";
             $stmt = $this->pdo->prepare($sql);
-            $traza .= "Preparacion exitosa<br>";
+            $traza .= "\nPreparacion exitosa!";
 
-            $stmt->execute([$nro, $fecha, $cod, $desc, $um, $cant, $precio, $importe]);
-            $traza .= "Ejecucion exitosa<br>";
-            $traza .= "Alta de renglón $nro / $cod correcta";
+            $stmt->bindParam(':nroFactura', $nro);
+            $stmt->bindParam(':fechaFactura', $fecha);
+            $stmt->bindParam(':codArticulo', $cod);
+            $stmt->bindParam(':descripcion', $desc);
+            $stmt->bindParam(':unidadMedida', $um);
+            $stmt->bindParam(':cantidad', $cant);
+            $stmt->bindParam(':precioUnitario', $precio);
+            $stmt->bindParam(':importeRenglon', $importe);
+            $traza .= "\nBinding exitoso!";
+
+            $stmt->execute();
+            $traza .= "\nEjecucion exitosa!";
+            $traza .= "\nAlta de renglón $nro / $cod correcta";
+
+            // Manejo de archivo PDF binario si se envió
+            if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
+                try {
+                    $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
+                    $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
+                    if ($colPdf) {
+                        $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
+                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `$colPdf` = :doc WHERE nroFactura = :nro AND codArticulo = :cod");
+                        $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
+                        $stmtPdf->bindParam(':nro', $nro);
+                        $stmtPdf->bindParam(':cod', $cod);
+                        $stmtPdf->execute();
+                        $traza .= "\nDocumento PDF actualizado correctamente.";
+                    }
+                } catch (Exception $ePdf) {
+                    Database::logError("Error guardando PDF alta: " . $ePdf->getMessage());
+                }
+            }
+
             return true;
         } catch (PDOException $e) {
             Database::logError('Alta: ' . $e->getMessage());
-            $traza .= "Error: " . $e->getMessage();
+            $traza .= "\n" . $e->getMessage();
             return false;
         }
     }
 
-    public function actualizarRenglon($datos, &$traza = '') {
+    public function actualizarRenglon($datos, &$traza = '', $archivoPdf = null) {
         if (!$this->pdo) {
-            $traza = "Error: Sin conexión con la base de datos";
+            $traza = "No se pudo conectar a la base de datos.";
             return false;
         }
-        $traza .= "Conexion exitosa<br>";
+
+        $nro     = $datos['nroFactura'] ?? '';
+        $fecha   = $datos['fechaFactura'] ?? '';
+        $cod     = $datos['codArticulo'] ?? '';
+        $desc    = $datos['descripcion'] ?? '';
+        $um      = $datos['unidadMedida'] ?? '';
+        $cant    = (float)($datos['cantidad'] ?? 0);
+        $precio  = (float)($datos['precioUnitario'] ?? 0);
+        $importe = $cant * $precio;
+
+        $traza .= "Parte Modificacion simple de datos <br />\n";
+        $traza .= "nroFactura: $nro / codArticulo: $cod\n";
 
         try {
-            $nro     = $datos['nroFactura'] ?? '';
-            $fecha   = $datos['fechaFactura'] ?? '';
-            $cod     = $datos['codArticulo'] ?? '';
-            $desc    = $datos['descripcion'] ?? '';
-            $um      = $datos['unidadMedida'] ?? '';
-            $cant    = (float)($datos['cantidad'] ?? 0);
-            $precio  = (float)($datos['precioUnitario'] ?? 0);
-            $importe = $cant * $precio;
-
-            $sql = "UPDATE renglones_factura SET fechaFactura=?, descripcion=?, unidadMedida=?, cantidad=?, precioUnitario=?, importeRenglon=? WHERE nroFactura=? AND codArticulo=?";
+            $sql = "UPDATE renglones_factura SET fechaFactura=:fechaFactura, descripcion=:descripcion, unidadMedida=:unidadMedida, cantidad=:cantidad, precioUnitario=:precioUnitario, importeRenglon=:importeRenglon WHERE nroFactura=:nroFactura AND codArticulo=:codArticulo";
             $stmt = $this->pdo->prepare($sql);
-            $traza .= "Preparacion exitosa<br>";
+            $traza .= "\nPreparacion exitosa!";
 
-            $stmt->execute([$fecha, $desc, $um, $cant, $precio, $importe, $nro, $cod]);
-            $traza .= "Ejecucion exitosa<br>";
-            $traza .= "Modificacion de renglón $nro / $cod correcta";
+            $stmt->bindParam(':fechaFactura', $fecha);
+            $stmt->bindParam(':descripcion', $desc);
+            $stmt->bindParam(':unidadMedida', $um);
+            $stmt->bindParam(':cantidad', $cant);
+            $stmt->bindParam(':precioUnitario', $precio);
+            $stmt->bindParam(':importeRenglon', $importe);
+            $stmt->bindParam(':nroFactura', $nro);
+            $stmt->bindParam(':codArticulo', $cod);
+            $traza .= "\nBinding exitoso!";
+
+            $stmt->execute();
+            $traza .= "\nEjecucion exitosa!";
+            $traza .= "\nModificacion de renglón $nro / $cod correcta";
+
+            // Manejo de archivo PDF binario si se envió
+            if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
+                try {
+                    $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
+                    $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
+                    if ($colPdf) {
+                        $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
+                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `$colPdf` = :doc WHERE nroFactura = :nro AND codArticulo = :cod");
+                        $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
+                        $stmtPdf->bindParam(':nro', $nro);
+                        $stmtPdf->bindParam(':cod', $cod);
+                        $stmtPdf->execute();
+                        $traza .= "\nDocumento PDF actualizado correctamente.";
+                    }
+                } catch (Exception $ePdf) {
+                    Database::logError("Error actualizando PDF modi: " . $ePdf->getMessage());
+                }
+            }
+
             return true;
         } catch (PDOException $e) {
             Database::logError('Modi: ' . $e->getMessage());
-            $traza .= "Error: " . $e->getMessage();
+            $traza .= "\n" . $e->getMessage();
             return false;
         }
     }
 
     public function eliminarRenglon($nroFactura, $codArticulo, &$traza = '') {
         if (!$this->pdo) {
-            $traza = "Error: Sin conexión con la base de datos";
+            $traza = "No se pudo conectar a la base de datos.";
             return false;
         }
-        $traza .= "Conexion exitosa<br>";
 
         try {
-            $sql = "DELETE FROM renglones_factura WHERE nroFactura=? AND codArticulo=?";
+            $sql = "DELETE FROM renglones_factura WHERE nroFactura=:nroFactura AND codArticulo=:codArticulo";
             $stmt = $this->pdo->prepare($sql);
-            $traza .= "Preparacion exitosa<br>";
+            $traza .= "Preparacion exitosa!\n";
 
-            $stmt->execute([$nroFactura, $codArticulo]);
-            $traza .= "Ejecucion exitosa<br>";
+            $stmt->bindParam(':nroFactura', $nroFactura);
+            $stmt->bindParam(':codArticulo', $codArticulo);
+            $traza .= "Binding exitoso!\n";
+
+            $stmt->execute();
+            $traza .= "Ejecucion exitosa!\n";
             $traza .= "Baja de renglón $nroFactura / $codArticulo correcta";
             return true;
         } catch (PDOException $e) {
             Database::logError('Baja: ' . $e->getMessage());
-            $traza .= "Error: " . $e->getMessage();
+            $traza .= "\n" . $e->getMessage();
             return false;
+        }
+    }
+
+    public function getPdfBase64($nroFactura, $codArticulo) {
+        if (!$this->pdo) return null;
+        try {
+            $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
+            $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
+            if (!$colPdf) return null;
+
+            $stmt = $this->pdo->prepare("SELECT `$colPdf` FROM renglones_factura WHERE nroFactura = :nro AND codArticulo = :cod");
+            $stmt->bindParam(':nro', $nroFactura);
+            $stmt->bindParam(':cod', $codArticulo);
+            $stmt->execute();
+            $fila = $stmt->fetch();
+            if ($fila && !empty($fila[$colPdf])) {
+                return base64_encode($fila[$colPdf]);
+            }
+            return null;
+        } catch (PDOException $e) {
+            Database::logError('traeBinario: ' . $e->getMessage());
+            return null;
         }
     }
 }

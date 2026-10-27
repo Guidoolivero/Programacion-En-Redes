@@ -32,16 +32,16 @@ class RenglonesView {
     }
 
     // Procesa el alta enviada por AJAX y devuelve la traza al cliente
-    public function procesarAlta($datos) {
+    public function procesarAlta($datos, $archivoPdf = null) {
         $traza = '';
-        $this->model->insertarRenglon($datos, $traza);
+        $this->model->insertarRenglon($datos, $traza, $archivoPdf);
         echo $traza;
     }
 
     // Procesa la modificación enviada por AJAX y devuelve la traza al cliente
-    public function procesarModi($datos) {
+    public function procesarModi($datos, $archivoPdf = null) {
         $traza = '';
-        $this->model->actualizarRenglon($datos, $traza);
+        $this->model->actualizarRenglon($datos, $traza, $archivoPdf);
         echo $traza;
     }
 
@@ -50,5 +50,14 @@ class RenglonesView {
         $traza = '';
         $this->model->eliminarRenglon($nroFactura, $codArticulo, $traza);
         echo $traza;
+    }
+
+    // Trae documento PDF en base64 para visualizar en modal (traeBinario)
+    public function emitirBinarioPdf($nroFactura, $codArticulo) {
+        header('Content-Type: application/json; charset=utf-8');
+        $base64 = $this->model->getPdfBase64($nroFactura, $codArticulo);
+        $obj = new stdClass();
+        $obj->documentoPdf = $base64;
+        echo json_encode($obj, JSON_INVALID_UTF8_SUBSTITUTE);
     }
 }

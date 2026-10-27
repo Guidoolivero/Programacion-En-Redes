@@ -1,10 +1,10 @@
 body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5dc; padding-top: 50px; }
-h1 { text-align: left; }
+h1 { text-align: center; }
 .btn-volver { position: fixed; top: 10px; left: 10px; background: #333; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; z-index: 1000; }
-.controles { display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-bottom: 10px; }
-.controles input { width: 140px; padding: 6px; }
-.controles button { padding: 8px 14px; }
-.tabla-wrap { max-height: 480px; overflow-y: auto; border: 1px solid #ccc; }
+.controles { text-align: right; margin-bottom: 10px; }
+.controles input { width: 120px; }
+.controles button { padding: 6px 12px; margin-left: 6px; }
+.tabla-wrap { max-height: 420px; overflow-y: auto; border: 1px solid #ccc; }
 table { width: 100%; border-collapse: collapse; background: #ddd; }
 thead { position: sticky; top: 0; }
 .titulos th { background: #e07070; color: #222; padding: 8px; cursor: pointer; }
@@ -14,12 +14,68 @@ tbody td { padding: 6px 8px; border-bottom: 1px solid #bbb; }
 tbody tr:nth-child(even) { background: #c8c8c8; }
 tfoot td { background: #e07070; font-weight: bold; padding: 8px; }
 footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10px; }
-.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
-.modal.activo { display: flex; }
-.modal-box { background: #555; color: white; padding: 20px; border-radius: 6px; min-width: 520px; max-width: 700px; position: relative; }
-.modal-box h3 { margin-top: 0; text-align: center; background: #eee; color: #333; padding: 8px; }
-.modal-box .cerrar { position: absolute; top: 8px; right: 12px; cursor: pointer; font-size: 20px; color: #c00; }
-.modal-box label { display: block; margin-top: 8px; font-size: 14px; }
-.modal-box input, .modal-box select { width: 100%; padding: 6px; box-sizing: border-box; }
-.modal-box button { margin-top: 14px; padding: 10px 20px; }
-.respuesta { margin-top: 10px; background: #333; padding: 8px; font-size: 13px; max-height: 120px; overflow: auto; }
+
+/* Estados de opacidad del tablero */
+.contenedorActivo { opacity: 1; pointer-events: auto; }
+.contenedorPasivo { opacity: 0.3; pointer-events: none; }
+
+/* Botones de acción en celdas */
+.btCelda { padding: 4px 8px; cursor: pointer; border-radius: 3px; border: 1px solid #888; background: #eee; font-size: 12px; }
+.btCelda:hover { background: #ddd; }
+.btCeldaPdf { background: #17a2b8; color: white; border: none; }
+.btCeldaModi { background: #ffc107; color: #222; border: none; }
+.btCeldaBaja { background: #dc3545; color: white; border: none; }
+
+/* Estilos de ventanas modales según PDF */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  visibility: hidden;
+}
+.modal.activo { visibility: visible; }
+.modal-box {
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 6px;
+  width: 90%;
+  max-width: 520px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-box .cerrar {
+  position: absolute;
+  top: 10px; right: 14px;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.modal-box h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.modal-box form { display: flex; flex-direction: column; gap: 10px; }
+.modal-box label { font-size: 13px; font-weight: bold; display: flex; flex-direction: column; gap: 4px; }
+.modal-box input, .modal-box select { padding: 6px 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; }
+.modal-box button[type="submit"] {
+  padding: 8px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 6px;
+}
+.modal-box button[type="submit"]:disabled { background: #aaa; cursor: not-allowed; }
+
+/* Modal específico de respuesta del servidor (Págs. 10 y 11) */
+#ventanaModalRespuesta .modal-box { max-width: 480px; background: #fff; }
+#encabezadoModalRespuesta { font-weight: bold; font-size: 14px; margin-bottom: 10px; color: #333; }
+#contenidoModalRespuesta { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 12px; border: 1px solid #ddd; border-radius: 4px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
+#pieModalRespuesta { margin-top: 12px; text-align: right; }
+#pieModalRespuesta button { padding: 6px 14px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }

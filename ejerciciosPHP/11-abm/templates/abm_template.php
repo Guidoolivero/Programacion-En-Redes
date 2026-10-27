@@ -4,180 +4,446 @@
   <meta charset="UTF-8">
   <title>ABM — Renglones de factura (Patrón MVT)</title>
   <link rel="stylesheet" href="estilo.css">
+  <script src="jquery.js"></script>
 </head>
 <body>
   <a class="btn-volver" href="../../index.html">Volver al menú</a>
-  <h1>Renglones de factura de ventas</h1>
-  <p>Alumno: Guido Olivero — Tabla 11 — ABM (Patrón MVT)</p>
-  <div class="controles">
-    <label>Orden: <input type="text" id="orden" value="nroFactura" readonly></label>
-    <button type="button" id="btnCargar">Cargar datos</button>
-    <button type="button" id="btnVaciar">Vaciar datos</button>
-    <button type="button" id="btnLimpiar">Limpiar filtros</button>
-    <button type="button" id="btnAlta">Alta registro</button>
-  </div>
-  <div class="tabla-wrap">
-    <table>
-      <thead>
-        <tr class="titulos">
-          <th data-campo="nroFactura">Nro Factura</th>
-          <th data-campo="codArticulo">Cod. artículo</th>
-          <th data-campo="unidadMedida">UM</th>
-          <th data-campo="descripcion">Descripción</th>
-          <th data-campo="fechaFactura">Fecha</th>
-          <th data-campo="cantidad">Cantidad</th>
-          <th data-campo="precioUnitario">Precio</th>
-          <th data-campo="importeRenglon">Importe</th>
-          <th>Modis</th>
-          <th>Bajas</th>
-        </tr>
-        <tr class="filtros">
-          <td><input type="text" id="f_nroFactura"></td>
-          <td><input type="text" id="f_codArticulo"></td>
-          <td><select id="f_unidadMedida"><option value="">— todas —</option></select></td>
-          <td><input type="text" id="f_descripcion"></td>
-          <td><input type="date" id="f_fechaFactura"></td>
-          <td></td><td></td><td></td><td></td><td></td>
-        </tr>
-      </thead>
-      <tbody id="cuerpo"><tr><td colspan="10">Sin datos. Pulsa “Cargar datos”.</td></tr></tbody>
-      <tfoot><tr><td colspan="10" id="pie">Nro de registros: 0</td></tr></tfoot>
-    </table>
-  </div>
-  <footer><p>Renglones de factura de ventas — Guido Olivero</p></footer>
 
-  <div class="modal" id="modalForm">
+  <div id="contenedorTablaArticulos" class="contenedorActivo">
+    <h1>Renglones de factura de ventas</h1>
+    <p>Alumno: Guido Olivero — Tabla 11 — ABM (Patrón MVT)</p>
+
+    <div class="controles">
+      <label>Orden: <input type="text" id="orden" value="nroFactura" readonly></label>
+      <button type="button" id="btnCargar">Cargar datos</button>
+      <button type="button" id="btnVaciar">Vaciar datos</button>
+      <button type="button" id="btnLimpiar">Limpiar filtros</button>
+      <button type="button" id="btnAlta">Alta registro</button>
+    </div>
+
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr class="titulos">
+            <th data-campo="nroFactura">Nro Factura</th>
+            <th data-campo="codArticulo">Cod. artículo</th>
+            <th data-campo="unidadMedida">UM</th>
+            <th data-campo="descripcion">Descripción</th>
+            <th data-campo="fechaFactura">Fecha</th>
+            <th data-campo="cantidad">Cantidad</th>
+            <th data-campo="precioUnitario">Precio</th>
+            <th data-campo="importeRenglon">Importe</th>
+            <th>PDFs</th>
+            <th>Modis</th>
+            <th>Bajas</th>
+          </tr>
+          <tr class="filtros">
+            <td><input type="text" id="f_nroFactura"></td>
+            <td><input type="text" id="f_codArticulo"></td>
+            <td><select id="f_unidadMedida"><option value="">— todas —</option></select></td>
+            <td><input type="text" id="f_descripcion"></td>
+            <td><input type="date" id="f_fechaFactura"></td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+          </tr>
+        </thead>
+        <tbody id="tbDatos"><tr><td colspan="11">Sin datos. Pulsa “Cargar datos”.</td></tr></tbody>
+        <tfoot><tr><td colspan="11" id="pie">Nro de registros: 0</td></tr></tfoot>
+      </table>
+    </div>
+
+    <footer><p>Renglones de factura de ventas — Guido Olivero</p></footer>
+  </div>
+
+  <!-- Modal Formulario de Alta (Págs. 1, 5, 7, 15) -->
+  <div class="modal" id="ventanaModalFormularioAlta">
     <div class="modal-box">
-      <span class="cerrar" onclick="cerrarModal()">&times;</span>
-      <h3 id="tituloModal">Formulario</h3>
-      <form id="formABM">
-        <label>Nro Factura: <input type="text" name="nroFactura" id="m_nro" required></label>
-        <label>Fecha: <input type="date" name="fechaFactura" id="m_fecha" required></label>
-        <label>Cod. artículo: <input type="text" name="codArticulo" id="m_cod" required></label>
-        <label>Descripción: <input type="text" name="descripcion" id="m_desc" required></label>
-        <label>Unidad de medida: <select name="unidadMedida" id="m_um" required></select></label>
-        <label>Cantidad: <input type="number" name="cantidad" id="m_cant" step="0.01" required></label>
-        <label>Precio unitario: <input type="number" name="precioUnitario" id="m_precio" step="0.01" required></label>
-        <button type="submit" id="btnEnviar">Enviar</button>
+      <span class="cerrar" onclick="cerrarModalAlta()">&times;</span>
+      <h3>Formulario de Alta</h3>
+      <form id="formArticulosAlta" method="post" enctype="multipart/form-data">
+        <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroAlta" required></label>
+        <label>Fecha: <input type="date" name="fechaFactura" id="formArticulosEntFechaAlta" required></label>
+        <label>Cod. artículo: <input type="text" name="codArticulo" id="formArticulosEntCodArtAlta" required></label>
+        <label>Descripción: <input type="text" name="descripcion" id="formArticulosEntDescripcionAlta" required></label>
+        <label>Unidad de medida: <select name="unidadMedida" id="formArticulosEntUmAlta" required></select></label>
+        <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadAlta" step="0.01" required></label>
+        <label>Precio unitario: <input type="number" name="precioUnitario" id="formArticulosEntPrecioAlta" step="0.01" required></label>
+        <label>Documento PDF: <input type="file" name="documentoPdf" id="formArticulosEntDocumentoPdfAlta" accept="application/pdf"></label>
+        <button type="submit" id="btEnvioFormAlta" disabled>Enviar Alta</button>
       </form>
-      <div class="respuesta" id="respuesta"></div>
+    </div>
+  </div>
+
+  <!-- Modal Formulario de Modificación (Págs. 1, 5, 8, 9, 12, 19) -->
+  <div class="modal" id="ventanaModalFormularioModi">
+    <div class="modal-box">
+      <span class="cerrar" onclick="cerrarModalModi()">&times;</span>
+      <h3>Formulario de Modificación</h3>
+      <form id="formArticulosModi" method="post" enctype="multipart/form-data">
+        <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroModi" readonly required></label>
+        <label>Fecha: <input type="date" name="fechaFactura" id="formArticulosEntFechaModi" required></label>
+        <label>Cod. artículo: <input type="text" name="codArticulo" id="formArticulosEntCodArtModi" readonly required></label>
+        <label>Descripción: <input type="text" name="descripcion" id="formArticulosEntDescripcionModi" required></label>
+        <label>Unidad de medida: <select name="unidadMedida" id="formArticulosEntUmModi" required></select></label>
+        <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadModi" step="0.01" required></label>
+        <label>Precio unitario: <input type="number" name="precioUnitario" id="formArticulosEntPrecioModi" step="0.01" required></label>
+        <label>Documento PDF: <input type="file" name="documentoPdf" id="formArticulosEntDocumentoPdfModi" accept="application/pdf"></label>
+        <button type="submit" id="btEnvioFormModi" disabled>Enviar Modi</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Respuesta del Servidor (Págs. 5, 10, 11) -->
+  <div class="modal" id="ventanaModalRespuesta">
+    <div class="modal-box">
+      <span class="cerrar" onclick="cerrarModalRespuesta()">&times;</span>
+      <div id="encabezadoModalRespuesta">Respuesta del server:</div>
+      <div id="contenidoModalRespuesta"></div>
+      <div id="pieModalRespuesta">
+        <button type="button" onclick="cerrarModalRespuesta()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Visor PDF (Págs. 2, 23) -->
+  <div class="modal" id="ventanaModalPdf">
+    <div class="modal-box" style="max-width: 750px; height: 80vh;">
+      <span class="cerrar" onclick="cerrarModalPdf()">&times;</span>
+      <h3>Visualizador de PDF</h3>
+      <iframe id="iframePdf" style="width: 100%; height: calc(100% - 40px); border: none;"></iframe>
     </div>
   </div>
 
   <script>
-    let modo = 'alta';
-    window.addEventListener('DOMContentLoaded', cargarUnidades);
+    // Variable global de unidades (Págs. 3 y 4 del apunte)
+    var objGlobalFamilias = { unidades: [] };
 
+    // Declaraciones de objetos del DOM al arranque (Pág. 5 del apunte)
+    var objTbDatos;
+    var objCodArtAlta;
+
+    $(document).ready(function() {
+      objTbDatos = document.getElementById("tbDatos");
+      objCodArtAlta = document.getElementById("formArticulosEntCodArtAlta");
+
+      $("#orden").val("nroFactura");
+      $("#contenedorTablaArticulos").addClass("contenedorActivo");
+
+      $("#ventanaModalFormularioAlta").css("visibility", "hidden");
+      $("#ventanaModalFormularioModi").css("visibility", "hidden");
+      $("#ventanaModalRespuesta").css("visibility", "hidden");
+      $("#ventanaModalPdf").css("visibility", "hidden");
+
+      $("#btEnvioFormModi").attr("disabled", true);
+      $("#btEnvioFormAlta").attr("disabled", true);
+
+      // Carga inicial de unidades (Págs. 3 y 4)
+      cargarUnidades();
+
+      // Eventos de controles de tabla
+      document.querySelectorAll('th[data-campo]').forEach(th => {
+        th.addEventListener('click', () => $("#orden").val(th.dataset.campo));
+      });
+      $("#btnCargar").click(cargarDatos);
+      $("#btnVaciar").click(function() {
+        $("#tbDatos").html('<tr><td colspan="11">Sin datos.</td></tr>');
+        $("#pie").text('Nro de registros: 0');
+      });
+      $("#btnLimpiar").click(function() {
+        ['f_nroFactura','f_codArticulo','f_descripcion','f_fechaFactura'].forEach(id => document.getElementById(id).value = '');
+        $("#f_unidadMedida").val('');
+      });
+
+      // Botón Alta abre modal
+      $("#btnAlta").click(function() {
+        $("#contenedorTablaArticulos").addClass("contenedorPasivo");
+        document.getElementById("formArticulosAlta").reset();
+        poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
+        $("#btEnvioFormAlta").attr("disabled", true);
+        $("#ventanaModalFormularioAlta").css("visibility", "visible").addClass("activo");
+      });
+
+      // Handlers para validar entradas con keyup y change (Págs. 1, 6, 7)
+      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change", function() {
+        todoListoParaAlta();
+      });
+      $("#formArticulosModi input, #formArticulosModi select").on("keyup change", function() {
+        todoListoParaModi();
+      });
+
+      // Handlers de envío de formularios (Págs. 10 y 11)
+      $("#formArticulosAlta").submit(function(e) {
+        e.preventDefault();
+        alta();
+      });
+      $("#formArticulosModi").submit(function(e) {
+        e.preventDefault();
+        modi();
+      });
+    });
+
+    // Poblamiento de unidades (Págs. 3 y 4)
     async function cargarUnidades() {
       try {
         const resp = await fetch('salidaJsonUnidades.php');
         const texto = await resp.text();
         alert(texto);
-        const data = JSON.parse(texto);
-        const selFiltro = document.getElementById('f_unidadMedida');
-        const selModal = document.getElementById('m_um');
-        (data.unidades || []).forEach(u => {
-          const val = u.cod_um || u.codigo || u.codUm || u.id || u.descripcion || '';
-          const nom = u.descripcion || u.descripcionUm || u.nombre || val;
-          const opt1 = document.createElement('option'); opt1.value = val; opt1.textContent = nom; selFiltro.appendChild(opt1);
-          const opt2 = document.createElement('option'); opt2.value = val; opt2.textContent = nom; selModal.appendChild(opt2);
-        });
-      } catch (e) { alert('Error unidades: ' + e); }
+        var objFamilias = JSON.parse(texto);
+        llenaFiltroFamilias(objFamilias);
+        objGlobalFamilias = objFamilias;
+      } catch (e) {
+        alert('Error unidades: ' + e);
+      }
     }
 
-    document.querySelectorAll('th[data-campo]').forEach(th => th.addEventListener('click', () => document.getElementById('orden').value = th.dataset.campo));
-    document.getElementById('btnCargar').onclick = cargarDatos;
-    document.getElementById('btnVaciar').onclick = () => { document.getElementById('cuerpo').innerHTML = '<tr><td colspan="10">Sin datos.</td></tr>'; document.getElementById('pie').textContent = 'Nro de registros: 0'; };
-    document.getElementById('btnLimpiar').onclick = () => { ['f_nroFactura','f_codArticulo','f_descripcion','f_fechaFactura'].forEach(id => document.getElementById(id).value = ''); document.getElementById('f_unidadMedida').value = ''; };
-    document.getElementById('btnAlta').onclick = () => abrirModal('alta');
+    function llenaFiltroFamilias(objFamilias) {
+      const select = document.getElementById('f_unidadMedida');
+      $(select).find('option:not(:first)').remove();
+      (objFamilias.unidades || []).forEach(function(argValor, argIndice) {
+        var objOption = document.createElement("option");
+        objOption.setAttribute("class", "elementoOptionSelect");
+        const val = argValor.cod_um || argValor.codigo || argValor.codUm || argValor.id || argValor.descripcion || '';
+        const nom = argValor.descripcion || argValor.descripcionUm || argValor.nombre || val;
+        objOption.setAttribute("value", val);
+        objOption.innerHTML = nom;
+        select.appendChild(objOption);
+      });
+    }
 
+    function poblarSelectUnidades(selectElement, valorSeleccionado = '') {
+      $(selectElement).empty();
+      var optDefault = document.createElement("option");
+      optDefault.value = "";
+      optDefault.textContent = "-- Seleccione UM --";
+      selectElement.appendChild(optDefault);
+
+      (objGlobalFamilias.unidades || []).forEach(function(argValor, argIndice) {
+        var objOption = document.createElement("option");
+        objOption.setAttribute("class", "elementoOptionSelect");
+        const val = argValor.cod_um || argValor.codigo || argValor.codUm || argValor.id || argValor.descripcion || '';
+        const nom = argValor.descripcion || argValor.descripcionUm || argValor.nombre || val;
+        objOption.setAttribute("value", val);
+        objOption.innerHTML = nom;
+        if (val == valorSeleccionado) {
+          objOption.setAttribute("selected", "selected");
+        }
+        selectElement.appendChild(objOption);
+      });
+    }
+
+    // Funciones de validación con checkValidity (Págs. 6 y 7)
+    function todoListoParaAlta() {
+      if (document.getElementById("formArticulosAlta").checkValidity()) {
+        $("#btEnvioFormAlta").attr("disabled", false);
+      } else {
+        $("#btEnvioFormAlta").attr("disabled", true);
+      }
+    }
+
+    function todoListoParaModi() {
+      if (document.getElementById("formArticulosModi").checkValidity()) {
+        $("#btEnvioFormModi").attr("disabled", false);
+      } else {
+        $("#btEnvioFormModi").attr("disabled", true);
+      }
+    }
+
+    // Consulta y barrido de filas construyendo celdas y eventos dinámicos (Págs. 8 y 9)
     async function cargarDatos() {
       const params = new URLSearchParams();
-      params.append('orden', document.getElementById('orden').value);
-      params.append('f_nroFactura', document.getElementById('f_nroFactura').value);
-      params.append('f_codArticulo', document.getElementById('f_codArticulo').value);
-      params.append('f_unidadMedida', document.getElementById('f_unidadMedida').value);
-      params.append('f_descripcion', document.getElementById('f_descripcion').value);
-      params.append('f_fechaFactura', document.getElementById('f_fechaFactura').value);
+      params.append('orden', $("#orden").val());
+      params.append('f_nroFactura', $("#f_nroFactura").val());
+      params.append('f_codArticulo', $("#f_codArticulo").val());
+      params.append('f_unidadMedida', $("#f_unidadMedida").val());
+      params.append('f_descripcion', $("#f_descripcion").val());
+      params.append('f_fechaFactura', $("#f_fechaFactura").val());
+
       alert('Lo que sale del navegador en el body:\n' + params.toString());
-      document.getElementById('cuerpo').innerHTML = '<tr><td colspan="10">Esperando respuesta…</td></tr>';
+      $("#tbDatos").html('<tr><td colspan="11">Esperando respuesta…</td></tr>');
+
       try {
         const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
         const texto = await resp.text();
         alert(texto);
         const data = JSON.parse(texto);
-        pintar(data.renglones || []);
-        document.getElementById('pie').textContent = 'Nro de registros: ' + (data.cantidad || 0);
-      } catch (e) { alert('Error: ' + e); }
-    }
-
-    function pintar(filas) {
-      const tbody = document.getElementById('cuerpo');
-      if (!filas.length) { tbody.innerHTML = '<tr><td colspan="10">Sin resultados.</td></tr>'; return; }
-      tbody.innerHTML = filas.map(r => `<tr>
-        <td>${r.nroFactura??''}</td>
-        <td>${r.codArticulo??''}</td>
-        <td>${r.unidadMedida??''}</td>
-        <td>${r.descripcion??''}</td>
-        <td>${r.fechaFactura??''}</td>
-        <td>${r.cantidad??''}</td>
-        <td>${r.precioUnitario??''}</td>
-        <td>${r.importeRenglon??''}</td>
-        <td><button type="button" onclick='abrirModi(${JSON.stringify(r)})'>Modi</button></td>
-        <td><button type="button" onclick='borrar("${r.nroFactura}","${r.codArticulo}")'>Borrar</button></td>
-      </tr>`).join('');
-    }
-
-    function abrirModal(m) {
-      modo = m;
-      document.getElementById('tituloModal').textContent = m === 'alta' ? 'Formulario de alta' : 'Formulario de modificación';
-      document.getElementById('btnEnviar').textContent = m === 'alta' ? 'Enviar Alta' : 'Enviar Modi';
-      document.getElementById('respuesta').innerHTML = '';
-      if (m === 'alta') {
-        document.getElementById('formABM').reset();
-        document.getElementById('m_nro').readOnly = false;
-        document.getElementById('m_cod').readOnly = false;
+        cargarTabla(data.renglones || []);
+        $("#pie").text('Nro de registros: ' + (data.cantidad || 0));
+      } catch (e) {
+        alert('Error: ' + e);
       }
-      document.getElementById('modalForm').classList.add('activo');
     }
 
-    function abrirModi(r) {
-      abrirModal('modi');
-      document.getElementById('m_nro').value = r.nroFactura || '';
-      document.getElementById('m_nro').readOnly = true;
-      document.getElementById('m_fecha').value = (r.fechaFactura || '').substring(0,10);
-      document.getElementById('m_cod').value = r.codArticulo || '';
-      document.getElementById('m_cod').readOnly = true;
-      document.getElementById('m_desc').value = r.descripcion || '';
-      document.getElementById('m_um').value = r.unidadMedida || '';
-      document.getElementById('m_cant').value = r.cantidad || '';
-      document.getElementById('m_precio').value = r.precioUnitario || '';
+    function cargarTabla(filas) {
+      const tbody = document.getElementById('tbDatos');
+      tbody.innerHTML = '';
+      if (!filas.length) {
+        tbody.innerHTML = '<tr><td colspan="11">Sin resultados.</td></tr>';
+        return;
+      }
+
+      filas.forEach(function(argValor) {
+        var objTr = document.createElement("tr");
+
+        // Datos de columnas comunes
+        const campos = ['nroFactura', 'codArticulo', 'unidadMedida', 'descripcion', 'fechaFactura', 'cantidad', 'precioUnitario', 'importeRenglon'];
+        campos.forEach(c => {
+          var td = document.createElement("td");
+          td.textContent = argValor[c] ?? '';
+          objTr.appendChild(td);
+        });
+
+        // Columna PDF (Págs. 2 y 23)
+        var tdPdf = document.createElement("td");
+        tdPdf.setAttribute("campo-dato", "articulos_btPdf");
+        tdPdf.innerHTML = "<button type='button' class='btCelda btCeldaPdf'>PDF</button>";
+        tdPdf.onclick = function() {
+          verPdf(argValor.nroFactura, argValor.codArticulo);
+        };
+        objTr.appendChild(tdPdf);
+
+        // Columna Modi (Pág. 8)
+        var tdModi = document.createElement("td");
+        tdModi.setAttribute("campo-dato", "articulos_btModi");
+        tdModi.innerHTML = "<button type='button' class='btCelda btCeldaModi'>Modi</button>";
+        tdModi.onclick = function() {
+          $("#contenedorTablaArticulos").addClass("contenedorPasivo");
+          $("#ventanaModalFormularioModi").css("visibility", "visible").addClass("activo");
+          CompletaFichaArticulo(argValor);
+        };
+        objTr.appendChild(tdModi);
+
+        // Columna Baja (Pág. 8)
+        var tdBaja = document.createElement("td");
+        tdBaja.setAttribute("campo-dato", "articulos_btBaja");
+        tdBaja.innerHTML = "<button type='button' class='btCelda btCeldaBaja'>Borrar</button>";
+        tdBaja.onclick = function() {
+          baja(argValor.nroFactura, argValor.codArticulo);
+        };
+        objTr.appendChild(tdBaja);
+
+        tbody.appendChild(objTr);
+      });
     }
 
-    function cerrarModal() {
-      document.getElementById('modalForm').classList.remove('activo');
+    // Completa el formulario de Modi (Pág. 9)
+    function CompletaFichaArticulo(argArticulo) {
+      $("#formArticulosEntNroModi").val(argArticulo.nroFactura);
+      $("#formArticulosEntFechaModi").val((argArticulo.fechaFactura || '').substring(0, 10));
+      $("#formArticulosEntCodArtModi").val(argArticulo.codArticulo);
+      $("#formArticulosEntDescripcionModi").val(argArticulo.descripcion);
+      $("#formArticulosEntCantidadModi").val(argArticulo.cantidad);
+      $("#formArticulosEntPrecioModi").val(argArticulo.precioUnitario);
+
+      const selectUm = document.getElementById("formArticulosEntUmModi");
+      poblarSelectUnidades(selectUm, argArticulo.unidadMedida);
+
+      todoListoParaModi();
     }
 
-    document.getElementById('formABM').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const fd = new FormData(this);
-      const url = modo === 'alta' ? 'alta.php' : 'modi.php';
-      const resp = await fetch(url, { method: 'POST', body: fd });
-      const texto = await resp.text();
-      document.getElementById('respuesta').innerHTML = texto;
-      alert(texto);
-      cargarDatos();
-    });
+    // Petición AJAX Alta (Págs. 10 y 11)
+    async function alta() {
+      var objFormulario = document.getElementById("formArticulosAlta");
+      var objDatosFormulario = new FormData(objFormulario);
+      const options = {
+        method: 'POST',
+        headers: {},
+        body: objDatosFormulario
+      };
 
-    async function borrar(nro, cod) {
-      if (!confirm('¿Borrar renglón ' + nro + ' / ' + cod + '?')) return;
-      const fd = new FormData();
-      fd.append('nroFactura', nro);
-      fd.append('codArticulo', cod);
-      const resp = await fetch('baja.php', { method: 'POST', body: fd });
-      const texto = await resp.text();
-      alert(texto);
-      cargarDatos();
+      try {
+        const resp = await fetch('alta.php', options);
+        const datos = await resp.text();
+        alert(datos);
+        mostrarModalRespuesta(datos);
+        cerrarModalAlta();
+        cargarDatos();
+      } catch (err) {
+        alert('Error en alta: ' + err);
+      }
+    }
+
+    // Petición AJAX Modi (Págs. 10 y 11)
+    async function modi() {
+      var objFormulario = document.getElementById("formArticulosModi");
+      var objDatosFormulario = new FormData(objFormulario);
+      const options = {
+        method: 'POST',
+        headers: {},
+        body: objDatosFormulario
+      };
+
+      try {
+        const resp = await fetch('modi.php', options);
+        const datos = await resp.text();
+        alert(datos);
+        mostrarModalRespuesta(datos);
+        cerrarModalModi();
+        cargarDatos();
+      } catch (err) {
+        alert('Error en modi: ' + err);
+      }
+    }
+
+    // Petición AJAX Baja (Pág. 10)
+    async function baja(nro, cod) {
+      if (!confirm('¿Confirma la eliminación del renglón Factura ' + nro + ' / Artículo ' + cod + '?')) return;
+      var objDatosFormulario = new FormData();
+      objDatosFormulario.append('nroFactura', nro);
+      objDatosFormulario.append('codArticulo', cod);
+
+      try {
+        const resp = await fetch('baja.php', { method: 'POST', body: objDatosFormulario });
+        const datos = await resp.text();
+        alert(datos);
+        mostrarModalRespuesta(datos);
+        cargarDatos();
+      } catch (err) {
+        alert('Error en baja: ' + err);
+      }
+    }
+
+    // Visualizar PDF con traeBinario.php (Pág. 23)
+    async function verPdf(nro, cod) {
+      try {
+        const resp = await fetch(`traeBinario.php?nroFactura=${encodeURIComponent(nro)}&codArticulo=${encodeURIComponent(cod)}`);
+        const json = await resp.json();
+        if (json && json.documentoPdf) {
+          $("#contenedorTablaArticulos").addClass("contenedorPasivo");
+          document.getElementById('iframePdf').src = "data:application/pdf;base64," + json.documentoPdf;
+          $("#ventanaModalPdf").css("visibility", "visible").addClass("activo");
+        } else {
+          alert('No hay documento PDF asociado a este renglón.');
+        }
+      } catch (e) {
+        alert('Error al obtener PDF: ' + e);
+      }
+    }
+
+    // Modal de respuesta del servidor (Págs. 10 y 11)
+    function mostrarModalRespuesta(datos) {
+      $("#contenedorTablaArticulos").addClass("contenedorPasivo");
+      $("#ventanaModalRespuesta").css("visibility", "visible").addClass("activo");
+      $("#contenidoModalRespuesta").empty();
+      $("#encabezadoModalRespuesta").html("Respuesta del server: ");
+      $("#contenidoModalRespuesta").html(datos);
+    }
+
+    // Funciones de cierre de modales y restauración de opacidad
+    function cerrarModalAlta() {
+      $("#ventanaModalFormularioAlta").css("visibility", "hidden").removeClass("activo");
+      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
+    }
+    function cerrarModalModi() {
+      $("#ventanaModalFormularioModi").css("visibility", "hidden").removeClass("activo");
+      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
+    }
+    function cerrarModalRespuesta() {
+      $("#ventanaModalRespuesta").css("visibility", "hidden").removeClass("activo");
+      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
+    }
+    function cerrarModalPdf() {
+      $("#ventanaModalPdf").css("visibility", "hidden").removeClass("activo");
+      document.getElementById('iframePdf').src = "";
+      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
     }
   </script>
 </body>

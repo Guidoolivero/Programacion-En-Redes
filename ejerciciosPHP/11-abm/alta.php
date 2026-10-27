@@ -13,5 +13,7 @@ $datos = [
     'precioUnitario' => (float)($_POST['precioUnitario'] ?? 0),
 ];
 
+$archivoPdf = $_FILES['documentoPdf'] ?? null;
+
 $view = new RenglonesView();
-$view->procesarAlta($datos);
+$view->procesarAlta($datos, $archivoPdf);
