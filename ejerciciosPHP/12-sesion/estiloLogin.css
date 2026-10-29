@@ -1,0 +1,156 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 40px 20px;
+  background: #f5f5dc; /* Beige igual a los ejercicios de la materia */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.btn-volver {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #333;
+  color: white;
+  padding: 6px 14px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  z-index: 1000;
+}
+.btn-volver:hover {
+  background: #555;
+}
+
+.contenedor-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+}
+
+h2 {
+  margin-top: 0;
+  color: #333;
+  text-align: center;
+}
+
+.subtitulo {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.campo {
+  margin-bottom: 16px;
+}
+
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.campo input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.campo input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.btn-principal {
+  width: 100%;
+  background: #007bff;
+  color: white;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.btn-principal:hover {
+  background: #0056b3;
+}
+
+.btn-secundario {
+  background: #dc3545;
+  color: white;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.btn-secundario:hover {
+  background: #bd2130;
+}
+
+.botones-fila {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.botones-fila button {
+  flex: 1;
+}
+
+.info-box {
+  background: #eef4fb;
+  border-left: 4px solid #007bff;
+  padding: 14px;
+  border-radius: 4px;
+  margin: 15px 0;
+}
+.info-box p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #222;
+}
+.info-box code {
+  background: #dfeaf5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #0b4f8a;
+  font-size: 12px;
+}
+
+.badge-contador {
+  background: #28a745;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.ayuda-credenciales {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px dashed #ddd;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+}
+.ayuda-credenciales p {
+  margin: 4px 0;
+}

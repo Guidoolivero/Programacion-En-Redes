@@ -28,6 +28,7 @@
   <ol start="10">
     <li><a href="10-listado-orden-filtro/index.php">Listado + Orden + Filtros (Renglones de factura)</a></li>
     <li><a href="11-abm/index.php">11 - ABM (Alta / Baja / Modificación) — Patrón MVT</a></li>
+    <li><a href="12-sesion/index.php">12 - Manejo de Sesión (Protección, Login SHA-256, MVT)</a></li>
   </ol>
 </body>
 </html>
