@@ -7,7 +7,7 @@
   <script src="jquery.js"></script>
 </head>
 <body>
-  <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+  <div class="nav-volver-top">
     <a class="btn-volver" href="../../index.html">Menú General</a>
     <a class="btn-volver" href="../index.php">Menú Sesión</a>
   </div>
