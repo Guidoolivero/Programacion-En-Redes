@@ -120,8 +120,9 @@
     // Variable global de unidades (Págs. 3 y 4 del apunte)
     var objGlobalFamilias = { unidades: [] };
 
-    // Conjunto de códigos de artículo existentes para impedir duplicados en el Alta
-    var codigosExistentes = new Set();
+    // Conjunto de claves compuestas (NRO_FACTURA||COD_ARTICULO) para permitir repetir
+    // el mismo artículo en distintas facturas sin duplicar el mismo renglón en la misma factura
+    var renglonesExistentes = new Set();
 
     // Control de debounce y concurrencia para filtros en tiempo real
     var timerFiltro = null;
@@ -146,9 +147,9 @@
       $("#btEnvioFormModi").attr("disabled", true);
       $("#btEnvioFormAlta").attr("disabled", true);
 
-      // Carga inicial de unidades (Págs. 3 y 4) y precarga silenciosa de códigos existentes
+      // Carga inicial de unidades (Págs. 3 y 4) y precarga silenciosa de renglones existentes
       cargarUnidades();
-      sincronizarCodigosExistentes();
+      sincronizarRenglonesExistentes();
 
       // Eventos de encabezados para ordenar automáticamente al hacer click
       document.querySelectorAll('th[data-campo]').forEach(th => {
@@ -203,7 +204,7 @@
         objCodArtAlta.setCustomValidity("");
         $("#msgErrorCodArtAlta").hide().text("");
         $(objCodArtAlta).css("border-color", "");
-        sincronizarCodigosExistentes();
+        sincronizarRenglonesExistentes();
         poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
         // Asignar por defecto la fecha de hoy en formato YYYY-MM-DD (modificable por el usuario)
         const hoy = new Date().toISOString().substring(0, 10);
@@ -223,7 +224,7 @@
       // Handlers de envío de formularios (Págs. 10 y 11)
       $("#formArticulosAlta").submit(function(e) {
         e.preventDefault();
-        validarCodArtUnico();
+        validarRenglonUnicoAlta();
         if (!document.getElementById("formArticulosAlta").checkValidity()) {
           todoListoParaAlta();
           return;
@@ -236,17 +237,18 @@
       });
     });
 
-    // Sincroniza en segundo plano la lista completa de codArticulo para validar unicidad
-    async function sincronizarCodigosExistentes() {
+    // Sincroniza en segundo plano los pares (nroFactura||codArticulo) existentes
+    async function sincronizarRenglonesExistentes() {
       try {
         const params = new URLSearchParams();
         params.append('orden', 'nroFactura');
         const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
         const data = await resp.json();
-        codigosExistentes.clear();
+        renglonesExistentes.clear();
         (data.renglones || []).forEach(function(r) {
-          if (r.codArticulo) {
-            codigosExistentes.add(String(r.codArticulo).trim().toUpperCase());
+          if (r.nroFactura && r.codArticulo) {
+            const clave = String(r.nroFactura).trim().toUpperCase() + "||" + String(r.codArticulo).trim().toUpperCase();
+            renglonesExistentes.add(clave);
           }
         });
         if ($("#ventanaModalFormularioAlta").hasClass("activo")) {
@@ -257,15 +259,16 @@
       }
     }
 
-    // Valida que el código de artículo ingresado en el Alta no esté repetido
-    function validarCodArtUnico() {
+    // Permite repetir codArticulo en distintas facturas, bloqueando sólo si ya existe (nroFactura + codArticulo)
+    function validarRenglonUnicoAlta() {
       if (!objCodArtAlta) return;
-      const valorRaw = (objCodArtAlta.value || "").trim();
-      const valorNorm = valorRaw.toUpperCase();
+      const nroRaw = ($("#formArticulosEntNroAlta").val() || "").trim();
+      const codRaw = (objCodArtAlta.value || "").trim();
+      const clave = nroRaw.toUpperCase() + "||" + codRaw.toUpperCase();
 
-      if (valorNorm !== "" && codigosExistentes.has(valorNorm)) {
-        objCodArtAlta.setCustomValidity("El código de artículo ya existe.");
-        $("#msgErrorCodArtAlta").text('⚠️ El código "' + valorRaw + '" ya está registrado. No se permite repetir.').show();
+      if (nroRaw !== "" && codRaw !== "" && renglonesExistentes.has(clave)) {
+        objCodArtAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
+        $("#msgErrorCodArtAlta").text('⚠️ La factura "' + nroRaw + '" ya contiene el artículo "' + codRaw + '" (sí podés cargarlo en otra factura).').show();
         $(objCodArtAlta).css("border-color", "#e53e3e");
       } else {
         objCodArtAlta.setCustomValidity("");
@@ -323,9 +326,9 @@
       });
     }
 
-    // Funciones de validación con checkValidity (Págs. 6 y 7) + unicidad de codArticulo
+    // Funciones de validación con checkValidity (Págs. 6 y 7) + validación de clave compuesta
     function todoListoParaAlta() {
-      validarCodArtUnico();
+      validarRenglonUnicoAlta();
       if (document.getElementById("formArticulosAlta").checkValidity()) {
         $("#btEnvioFormAlta").attr("disabled", false);
       } else {
@@ -376,10 +379,11 @@
         const filas = data.renglones || [];
 
         if (!fNro && !fCod && !fUm && !fDesc && !fFecha) {
-          codigosExistentes.clear();
+          renglonesExistentes.clear();
           filas.forEach(function(r) {
-            if (r.codArticulo) {
-              codigosExistentes.add(String(r.codArticulo).trim().toUpperCase());
+            if (r.nroFactura && r.codArticulo) {
+              const clave = String(r.nroFactura).trim().toUpperCase() + "||" + String(r.codArticulo).trim().toUpperCase();
+              renglonesExistentes.add(clave);
             }
           });
         }
@@ -476,7 +480,7 @@
         alert(datos);
         mostrarModalRespuesta(datos);
         cerrarModalAlta();
-        await sincronizarCodigosExistentes();
+        await sincronizarRenglonesExistentes();
         cargarDatos(true);
       } catch (err) {
         alert('Error en alta: ' + err);
@@ -517,7 +521,7 @@
         const datos = await resp.text();
         alert(datos);
         mostrarModalRespuesta(datos);
-        await sincronizarCodigosExistentes();
+        await sincronizarRenglonesExistentes();
         cargarDatos(true);
       } catch (err) {
         alert('Error en baja: ' + err);

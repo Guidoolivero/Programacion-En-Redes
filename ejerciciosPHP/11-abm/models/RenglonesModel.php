@@ -218,24 +218,27 @@ class RenglonesModel {
     }
 
     /**
-     * Verifica si un código de artículo ya existe en renglones_factura (insensible a mayúsculas/espacios).
+     * Verifica si la combinación (nroFactura + codArticulo) ya existe en renglones_factura.
+     * Permite repetir el mismo codArticulo en distintas facturas y varios artículos en una misma factura.
      */
-    public function existeCodArticulo($codArticulo) {
+    public function existeRenglon($nroFactura, $codArticulo) {
         if (!$this->pdo) return false;
+        $nroLimpio = trim((string)$nroFactura);
         $codLimpio = trim((string)$codArticulo);
-        if ($codLimpio === '') return false;
+        if ($nroLimpio === '' || $codLimpio === '') return false;
 
         try {
             $c = $this->detectarColumnas();
-            if (empty($c['cod'])) return false;
+            if (empty($c['nro']) || empty($c['cod'])) return false;
 
-            $sql = "SELECT COUNT(*) FROM renglones_factura WHERE LOWER(TRIM(CAST(`{$c['cod']}` AS CHAR))) = LOWER(:cod)";
+            $sql = "SELECT COUNT(*) FROM renglones_factura WHERE LOWER(TRIM(CAST(`{$c['nro']}` AS CHAR))) = LOWER(:nro) AND LOWER(TRIM(CAST(`{$c['cod']}` AS CHAR))) = LOWER(:cod)";
             $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':nro', $nroLimpio);
             $stmt->bindValue(':cod', $codLimpio);
             $stmt->execute();
             return ((int)$stmt->fetchColumn()) > 0;
         } catch (PDOException $e) {
-            Database::logError('Validar codArticulo: ' . $e->getMessage());
+            Database::logError('Validar renglón: ' . $e->getMessage());
             return false;
         }
     }
@@ -394,10 +397,10 @@ class RenglonesModel {
         $traza .= "importeRenglon: " . $importe . "\n";
 
         try {
-            // Validación de unicidad: no permitir repetir el código de artículo
-            if ($this->existeCodArticulo($cod)) {
-                $msgDup = "El código de artículo '$cod' ya existe. No se permite repetir el código de artículo.";
-                Database::logError('Alta rechazada (código duplicado): ' . $msgDup);
+            // Se permite repetir codArticulo en distintas facturas, pero no duplicar la clave compuesta (nroFactura + codArticulo)
+            if ($this->existeRenglon($nro, $cod)) {
+                $msgDup = "En la factura '$nro' ya está cargado el artículo '$cod'. (Podés repetir '$cod' en otra factura distinta o modificar ese renglón).";
+                Database::logError('Alta rechazada (renglón duplicado en misma factura): ' . $msgDup);
                 $traza .= "\nERROR DE VALIDACIÓN: " . $msgDup;
                 return false;
             }
