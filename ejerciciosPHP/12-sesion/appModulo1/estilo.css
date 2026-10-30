@@ -1,9 +1,35 @@
 body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5dc; padding-top: 50px; }
 h1 { text-align: center; }
 .btn-volver { position: fixed; top: 10px; left: 10px; background: #333; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; z-index: 1000; }
-.controles { text-align: right; margin-bottom: 10px; }
-.controles input { width: 120px; }
-.controles button { padding: 6px 12px; margin-left: 6px; }
+
+/* Barra de controles con Flexbox (alineación responsiva) */
+.controles {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.controles label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.controles input { width: 120px; padding: 5px 8px; }
+.controles button {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #999;
+  background: #f8f9fa;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.controles button:hover { background: #e2e8f0; }
+
 .tabla-wrap { max-height: 420px; overflow-y: auto; border: 1px solid #ccc; }
 table { width: 100%; border-collapse: collapse; background: #ddd; }
 thead { position: sticky; top: 0; }
@@ -26,7 +52,7 @@ footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10p
 .btCeldaModi { background: #ffc107; color: #222; border: none; }
 .btCeldaBaja { background: #dc3545; color: white; border: none; }
 
-/* Estilos de ventanas modales según PDF */
+/* Estilos de ventanas modales según PDF con Flexbox (Centrado vertical y horizontal) */
 .modal {
   position: fixed;
   top: 0; left: 0;
@@ -58,6 +84,8 @@ footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10p
   font-weight: bold;
 }
 .modal-box h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+
+/* Formularios de modal con Flexbox en columna */
 .modal-box form { display: flex; flex-direction: column; gap: 10px; }
 .modal-box label { font-size: 13px; font-weight: bold; display: flex; flex-direction: column; gap: 4px; }
 .modal-box input, .modal-box select { padding: 6px 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; }
@@ -77,5 +105,9 @@ footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10p
 #ventanaModalRespuesta .modal-box { max-width: 480px; background: #fff; }
 #encabezadoModalRespuesta { font-weight: bold; font-size: 14px; margin-bottom: 10px; color: #333; }
 #contenidoModalRespuesta { font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 12px; border: 1px solid #ddd; border-radius: 4px; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
-#pieModalRespuesta { margin-top: 12px; text-align: right; }
+#pieModalRespuesta {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
 #pieModalRespuesta button { padding: 6px 14px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
