@@ -9,6 +9,19 @@ body {
   min-height: 80vh;
 }
 
+.nav-volver-top {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.nav-volver-top .btn-volver {
+  position: static;
+}
+
 .btn-volver {
   position: fixed;
   top: 10px;

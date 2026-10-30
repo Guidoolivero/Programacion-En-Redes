@@ -33,6 +33,12 @@ $idSesion = $_SESSION['identificativo'] ?? session_id();
   <link rel="stylesheet" href="estiloLogin.css">
 </head>
 <body>
+  <!-- Botones de navegación al menú general y al menú de ejercicios PHP -->
+  <div class="nav-volver-top">
+    <a class="btn-volver" href="../../index.html">Menú General</a>
+    <a class="btn-volver" href="../index.php">Menú PHP</a>
+  </div>
+
   <div class="contenedor-card">
     <h2>Sesión actualmente activa</h2>
     <p>Ya te encuentras autenticado en el sistema.</p>
