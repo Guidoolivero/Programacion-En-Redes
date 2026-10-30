@@ -217,6 +217,29 @@ class RenglonesModel {
         return $umStr;
     }
 
+    /**
+     * Verifica si un código de artículo ya existe en renglones_factura (insensible a mayúsculas/espacios).
+     */
+    public function existeCodArticulo($codArticulo) {
+        if (!$this->pdo) return false;
+        $codLimpio = trim((string)$codArticulo);
+        if ($codLimpio === '') return false;
+
+        try {
+            $c = $this->detectarColumnas();
+            if (empty($c['cod'])) return false;
+
+            $sql = "SELECT COUNT(*) FROM renglones_factura WHERE LOWER(TRIM(CAST(`{$c['cod']}` AS CHAR))) = LOWER(:cod)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':cod', $codLimpio);
+            $stmt->execute();
+            return ((int)$stmt->fetchColumn()) > 0;
+        } catch (PDOException $e) {
+            Database::logError('Validar codArticulo: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getUnidades() {
         if (!$this->pdo) return [];
         try {
@@ -260,17 +283,22 @@ class RenglonesModel {
             $condiciones = [];
             $params = [];
 
-            if (!empty($filtros['f_nroFactura']) && $c['nro']) {
-                $condiciones[] = "`{$c['nro']}` LIKE :f_nro";
-                $params[':f_nro'] = '%' . $filtros['f_nroFactura'] . '%';
+            $fNro   = trim((string)($filtros['f_nroFactura'] ?? ''));
+            $fCod   = trim((string)($filtros['f_codArticulo'] ?? ''));
+            $fUm    = trim((string)($filtros['f_unidadMedida'] ?? ''));
+            $fDesc  = trim((string)($filtros['f_descripcion'] ?? ''));
+            $fFecha = trim((string)($filtros['f_fechaFactura'] ?? ''));
+
+            if ($fNro !== '' && $c['nro']) {
+                $condiciones[] = "LOWER(CAST(`{$c['nro']}` AS CHAR)) LIKE LOWER(:f_nro)";
+                $params[':f_nro'] = '%' . $fNro . '%';
             }
-            if (!empty($filtros['f_codArticulo']) && $c['cod']) {
-                $condiciones[] = "`{$c['cod']}` LIKE :f_cod";
-                $params[':f_cod'] = '%' . $filtros['f_codArticulo'] . '%';
+            if ($fCod !== '' && $c['cod']) {
+                $condiciones[] = "LOWER(CAST(`{$c['cod']}` AS CHAR)) LIKE LOWER(:f_cod)";
+                $params[':f_cod'] = '%' . $fCod . '%';
             }
-            if (!empty($filtros['f_unidadMedida']) && $c['um']) {
-                $fUm = trim((string)$filtros['f_unidadMedida']);
-                $equivalencias = [$fUm];
+            if ($fUm !== '' && $c['um']) {
+                $equivalencias = [strtolower($fUm)];
                 foreach ($infoUm['filas'] as $u) {
                     $vals    = array_values($u);
                     $idVal   = $u['id'] ?? $u['id_unidad'] ?? $u['id_um'] ?? null;
@@ -281,27 +309,29 @@ class RenglonesModel {
                         ($codVal !== '' && strcasecmp((string)$codVal, $fUm) === 0) ||
                         ($descVal !== '' && strcasecmp((string)$descVal, $fUm) === 0)
                     ) {
-                        if ($idVal !== null) $equivalencias[] = (string)$idVal;
-                        if ($codVal !== '')  $equivalencias[] = (string)$codVal;
-                        if ($descVal !== '') $equivalencias[] = (string)$descVal;
+                        if ($idVal !== null) $equivalencias[] = strtolower(trim((string)$idVal));
+                        if ($codVal !== '')  $equivalencias[] = strtolower(trim((string)$codVal));
+                        if ($descVal !== '') $equivalencias[] = strtolower(trim((string)$descVal));
                     }
                 }
-                $equivalencias = array_values(array_unique(array_filter($equivalencias, fn($v) => $v !== '')));
+                $equivalencias = array_values(array_unique(array_filter($equivalencias, function($v) {
+                    return $v !== '';
+                })));
                 $phUm = [];
                 foreach ($equivalencias as $idx => $eqVal) {
                     $key = ":f_um_$idx";
                     $phUm[] = $key;
                     $params[$key] = $eqVal;
                 }
-                $condiciones[] = "`{$c['um']}` IN (" . implode(', ', $phUm) . ")";
+                $condiciones[] = "LOWER(TRIM(CAST(`{$c['um']}` AS CHAR))) IN (" . implode(', ', $phUm) . ")";
             }
-            if (!empty($filtros['f_descripcion']) && $c['desc']) {
-                $condiciones[] = "`{$c['desc']}` LIKE :f_desc";
-                $params[':f_desc'] = '%' . $filtros['f_descripcion'] . '%';
+            if ($fDesc !== '' && $c['desc']) {
+                $condiciones[] = "LOWER(CAST(`{$c['desc']}` AS CHAR)) LIKE LOWER(:f_desc)";
+                $params[':f_desc'] = '%' . $fDesc . '%';
             }
-            if (!empty($filtros['f_fechaFactura']) && $c['fecha']) {
-                $condiciones[] = "`{$c['fecha']}` = :f_fecha";
-                $params[':f_fecha'] = $filtros['f_fechaFactura'];
+            if ($fFecha !== '' && $c['fecha']) {
+                $condiciones[] = "CAST(`{$c['fecha']}` AS CHAR) LIKE :f_fecha";
+                $params[':f_fecha'] = $fFecha . '%';
             }
 
             $selUm  = $c['um']  ? "`{$c['um']}` AS unidadMedida" : "'' AS unidadMedida";
@@ -344,11 +374,11 @@ class RenglonesModel {
             return false;
         }
 
-        $nro     = $datos['nroFactura'] ?? '';
-        $fecha   = $datos['fechaFactura'] ?? '';
-        $cod     = $datos['codArticulo'] ?? '';
-        $desc    = $datos['descripcion'] ?? '';
-        $um      = $datos['unidadMedida'] ?? '';
+        $nro     = trim((string)($datos['nroFactura'] ?? ''));
+        $fecha   = trim((string)($datos['fechaFactura'] ?? ''));
+        $cod     = trim((string)($datos['codArticulo'] ?? ''));
+        $desc    = trim((string)($datos['descripcion'] ?? ''));
+        $um      = trim((string)($datos['unidadMedida'] ?? ''));
         $cant    = (float)($datos['cantidad'] ?? 0);
         $precio  = (float)($datos['precioUnitario'] ?? 0);
         $importe = $cant * $precio;
@@ -364,6 +394,14 @@ class RenglonesModel {
         $traza .= "importeRenglon: " . $importe . "\n";
 
         try {
+            // Validación de unicidad: no permitir repetir el código de artículo
+            if ($this->existeCodArticulo($cod)) {
+                $msgDup = "El código de artículo '$cod' ya existe. No se permite repetir el código de artículo.";
+                Database::logError('Alta rechazada (código duplicado): ' . $msgDup);
+                $traza .= "\nERROR DE VALIDACIÓN: " . $msgDup;
+                return false;
+            }
+
             $c = $this->detectarColumnas();
             $valorUmBD = $this->resolverValorUmParaBD($um, $c['um_es_int']);
 
@@ -442,11 +480,11 @@ class RenglonesModel {
             return false;
         }
 
-        $nro     = $datos['nroFactura'] ?? '';
-        $fecha   = $datos['fechaFactura'] ?? '';
-        $cod     = $datos['codArticulo'] ?? '';
-        $desc    = $datos['descripcion'] ?? '';
-        $um      = $datos['unidadMedida'] ?? '';
+        $nro     = trim((string)($datos['nroFactura'] ?? ''));
+        $fecha   = trim((string)($datos['fechaFactura'] ?? ''));
+        $cod     = trim((string)($datos['codArticulo'] ?? ''));
+        $desc    = trim((string)($datos['descripcion'] ?? ''));
+        $um      = trim((string)($datos['unidadMedida'] ?? ''));
         $cant    = (float)($datos['cantidad'] ?? 0);
         $precio  = (float)($datos['precioUnitario'] ?? 0);
         $importe = $cant * $precio;

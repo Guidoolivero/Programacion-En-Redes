@@ -58,10 +58,10 @@
             <th>Bajas</th>
           </tr>
           <tr class="filtros">
-            <td><input type="text" id="f_nroFactura"></td>
-            <td><input type="text" id="f_codArticulo"></td>
+            <td><input type="text" id="f_nroFactura" placeholder="Buscar nro..."></td>
+            <td><input type="text" id="f_codArticulo" placeholder="Buscar cód..."></td>
             <td><select id="f_unidadMedida"><option value="">— todas —</option></select></td>
-            <td><input type="text" id="f_descripcion"></td>
+            <td><input type="text" id="f_descripcion" placeholder="Buscar descripción..."></td>
             <td><input type="date" id="f_fechaFactura"></td>
             <td></td><td></td><td></td><td></td><td></td><td></td>
           </tr>
@@ -82,7 +82,10 @@
       <form id="formArticulosAlta" method="post" enctype="multipart/form-data">
         <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroAlta" required></label>
         <label>Fecha: <input type="date" name="fechaFactura" id="formArticulosEntFechaAlta" required></label>
-        <label>Cod. artículo: <input type="text" name="codArticulo" id="formArticulosEntCodArtAlta" required></label>
+        <label>Cod. artículo:
+          <input type="text" name="codArticulo" id="formArticulosEntCodArtAlta" required>
+          <span id="msgErrorCodArtAlta" style="color: #c53030; font-size: 12px; font-weight: bold; display: none; margin-top: 4px;"></span>
+        </label>
         <label>Descripción: <input type="text" name="descripcion" id="formArticulosEntDescripcionAlta" required></label>
         <label>Unidad de medida: <select name="unidadMedida" id="formArticulosEntUmAlta" required></select></label>
         <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadAlta" step="0.01" required></label>
@@ -137,6 +140,13 @@
     // Variable global de unidades (Págs. 3 y 4 del apunte)
     var objGlobalFamilias = { unidades: [] };
 
+    // Conjunto de códigos de artículo existentes para impedir duplicados en el Alta
+    var codigosExistentes = new Set();
+
+    // Control de debounce y concurrencia para filtros en tiempo real
+    var timerFiltro = null;
+    var reqRenglonesActual = 0;
+
     // Declaraciones de objetos del DOM al arranque (Pág. 5 del apunte)
     var objTbDatos;
     var objCodArtAlta;
@@ -161,27 +171,64 @@
       $("#btEnvioFormModi").attr("disabled", true);
       $("#btEnvioFormAlta").attr("disabled", true);
 
-      // Carga inicial de unidades (Págs. 3 y 4)
+      // Carga inicial de unidades (Págs. 3 y 4) y precarga silenciosa de códigos existentes
       cargarUnidades();
+      sincronizarCodigosExistentes();
 
-      // Eventos de controles de tabla
+      // Eventos de encabezados para ordenar automáticamente al hacer click
       document.querySelectorAll('th[data-campo]').forEach(th => {
-        th.addEventListener('click', () => $("#orden").val(th.dataset.campo));
+        th.addEventListener('click', () => {
+          $("#orden").val(th.dataset.campo);
+          cargarDatos(true);
+        });
       });
-      $("#btnCargar").click(cargarDatos);
+
+      // Botón Cargar datos (muestra las alertas didácticas del apunte)
+      $("#btnCargar").click(function() {
+        cargarDatos(false);
+      });
+
       $("#btnVaciar").click(function() {
         $("#tbDatos").html('<tr><td colspan="11">Sin datos.</td></tr>');
         $("#pie").text('Nro de registros: 0');
       });
+
+      // Limpiar filtros y recargar tabla automáticamente
       $("#btnLimpiar").click(function() {
         ['f_nroFactura','f_codArticulo','f_descripcion','f_fechaFactura'].forEach(id => document.getElementById(id).value = '');
         $("#f_unidadMedida").val('');
+        cargarDatos(true);
+      });
+
+      // Eventos de búsqueda/filtrado en vivo sobre los 5 campos de filtro
+      $("#f_nroFactura, #f_codArticulo, #f_descripcion").on("input keyup", function() {
+        clearTimeout(timerFiltro);
+        timerFiltro = setTimeout(function() {
+          cargarDatos(true);
+        }, 300);
+      });
+
+      $("#f_nroFactura, #f_codArticulo, #f_descripcion").on("keydown", function(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          clearTimeout(timerFiltro);
+          cargarDatos(true);
+        }
+      });
+
+      $("#f_unidadMedida, #f_fechaFactura").on("change input", function() {
+        clearTimeout(timerFiltro);
+        cargarDatos(true);
       });
 
       // Botón Alta abre modal
       $("#btnAlta").click(function() {
         $("#contenedorTablaArticulos").addClass("contenedorPasivo");
         document.getElementById("formArticulosAlta").reset();
+        objCodArtAlta.setCustomValidity("");
+        $("#msgErrorCodArtAlta").hide().text("");
+        $(objCodArtAlta).css("border-color", "");
+        sincronizarCodigosExistentes();
         poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
         // Asignar por defecto la fecha de hoy en formato YYYY-MM-DD (modificable por el usuario)
         const hoy = new Date().toISOString().substring(0, 10);
@@ -190,8 +237,8 @@
         $("#ventanaModalFormularioAlta").css("visibility", "visible").addClass("activo");
       });
 
-      // Handlers para validar entradas con keyup y change (Págs. 1, 6, 7)
-      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change input", function() {
+      // Handlers para validar entradas con keyup, change e input (Págs. 1, 6, 7)
+      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change input blur", function() {
         todoListoParaAlta();
       });
       $("#formArticulosModi input, #formArticulosModi select").on("keyup change input", function() {
@@ -201,6 +248,11 @@
       // Handlers de envío de formularios (Págs. 10 y 11)
       $("#formArticulosAlta").submit(function(e) {
         e.preventDefault();
+        validarCodArtUnico();
+        if (!document.getElementById("formArticulosAlta").checkValidity()) {
+          todoListoParaAlta();
+          return;
+        }
         alta();
       });
       $("#formArticulosModi").submit(function(e) {
@@ -208,6 +260,44 @@
         modi();
       });
     });
+
+    // Sincroniza en segundo plano la lista completa de codArticulo para validar unicidad
+    async function sincronizarCodigosExistentes() {
+      try {
+        const params = new URLSearchParams();
+        params.append('orden', 'nroFactura');
+        const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
+        const data = await resp.json();
+        codigosExistentes.clear();
+        (data.renglones || []).forEach(function(r) {
+          if (r.codArticulo) {
+            codigosExistentes.add(String(r.codArticulo).trim().toUpperCase());
+          }
+        });
+        if ($("#ventanaModalFormularioAlta").hasClass("activo")) {
+          todoListoParaAlta();
+        }
+      } catch (e) {
+        // Silencioso en segundo plano
+      }
+    }
+
+    // Valida que el código de artículo ingresado en el Alta no esté repetido
+    function validarCodArtUnico() {
+      if (!objCodArtAlta) return;
+      const valorRaw = (objCodArtAlta.value || "").trim();
+      const valorNorm = valorRaw.toUpperCase();
+
+      if (valorNorm !== "" && codigosExistentes.has(valorNorm)) {
+        objCodArtAlta.setCustomValidity("El código de artículo ya existe.");
+        $("#msgErrorCodArtAlta").text('⚠️ El código "' + valorRaw + '" ya está registrado. No se permite repetir.').show();
+        $(objCodArtAlta).css("border-color", "#e53e3e");
+      } else {
+        objCodArtAlta.setCustomValidity("");
+        $("#msgErrorCodArtAlta").hide().text("");
+        $(objCodArtAlta).css("border-color", "");
+      }
+    }
 
     // Poblamiento de unidades (Págs. 3 y 4)
     async function cargarUnidades() {
@@ -258,8 +348,9 @@
       });
     }
 
-    // Funciones de validación con checkValidity (Págs. 6 y 7)
+    // Funciones de validación con checkValidity (Págs. 6 y 7) + unicidad de codArticulo
     function todoListoParaAlta() {
+      validarCodArtUnico();
       if (document.getElementById("formArticulosAlta").checkValidity()) {
         $("#btEnvioFormAlta").attr("disabled", false);
       } else {
@@ -276,27 +367,55 @@
     }
 
     // Consulta y barrido de filas construyendo celdas y eventos dinámicos (Págs. 8 y 9)
-    async function cargarDatos() {
+    async function cargarDatos(silencioso = false) {
+      const miReq = ++reqRenglonesActual;
+
+      const fNro   = $("#f_nroFactura").val() || '';
+      const fCod   = $("#f_codArticulo").val() || '';
+      const fUm    = $("#f_unidadMedida").val() || '';
+      const fDesc  = $("#f_descripcion").val() || '';
+      const fFecha = $("#f_fechaFactura").val() || '';
+
       const params = new URLSearchParams();
       params.append('orden', $("#orden").val());
-      params.append('f_nroFactura', $("#f_nroFactura").val());
-      params.append('f_codArticulo', $("#f_codArticulo").val());
-      params.append('f_unidadMedida', $("#f_unidadMedida").val());
-      params.append('f_descripcion', $("#f_descripcion").val());
-      params.append('f_fechaFactura', $("#f_fechaFactura").val());
+      params.append('f_nroFactura', fNro);
+      params.append('f_codArticulo', fCod);
+      params.append('f_unidadMedida', fUm);
+      params.append('f_descripcion', fDesc);
+      params.append('f_fechaFactura', fFecha);
 
-      alert('Lo que sale del navegador en el body:\n' + params.toString());
+      if (!silencioso) {
+        alert('Lo que sale del navegador en el body:\n' + params.toString());
+      }
       $("#tbDatos").html('<tr><td colspan="11">Esperando respuesta…</td></tr>');
 
       try {
         const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
         const texto = await resp.text();
-        alert(texto);
+        if (miReq !== reqRenglonesActual) return; // Ignorar respuesta vieja si el usuario siguió escribiendo
+
+        if (!silencioso) {
+          alert(texto);
+        }
         const data = JSON.parse(texto);
-        cargarTabla(data.renglones || []);
+        const filas = data.renglones || [];
+
+        // Si no hay filtros activos, actualizamos también el set completo de códigos existentes
+        if (!fNro && !fCod && !fUm && !fDesc && !fFecha) {
+          codigosExistentes.clear();
+          filas.forEach(function(r) {
+            if (r.codArticulo) {
+              codigosExistentes.add(String(r.codArticulo).trim().toUpperCase());
+            }
+          });
+        }
+
+        cargarTabla(filas);
         $("#pie").text('Nro de registros: ' + (data.cantidad || 0));
       } catch (e) {
-        alert('Error: ' + e);
+        if (!silencioso) {
+          alert('Error: ' + e);
+        }
       }
     }
 
@@ -383,7 +502,8 @@
         alert(datos);
         mostrarModalRespuesta(datos);
         cerrarModalAlta();
-        cargarDatos();
+        await sincronizarCodigosExistentes();
+        cargarDatos(true);
       } catch (err) {
         alert('Error en alta: ' + err);
       }
@@ -405,7 +525,7 @@
         alert(datos);
         mostrarModalRespuesta(datos);
         cerrarModalModi();
-        cargarDatos();
+        cargarDatos(true);
       } catch (err) {
         alert('Error en modi: ' + err);
       }
@@ -423,7 +543,8 @@
         const datos = await resp.text();
         alert(datos);
         mostrarModalRespuesta(datos);
-        cargarDatos();
+        await sincronizarCodigosExistentes();
+        cargarDatos(true);
       } catch (err) {
         alert('Error en baja: ' + err);
       }
