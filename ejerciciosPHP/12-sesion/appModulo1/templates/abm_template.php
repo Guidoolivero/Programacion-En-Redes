@@ -10,6 +10,7 @@
   <div class="nav-volver-top">
     <a class="btn-volver" href="../../index.html">Menú General</a>
     <a class="btn-volver" href="../index.php">Menú Sesión</a>
+    <a class="btn-volver" href="../descargarErrores.php" style="background:#4a5568;">📥 Errores.txt</a>
   </div>
 
   <div id="contenedorTablaArticulos" class="contenedorActivo">
