@@ -9,7 +9,9 @@ class Database {
 
     public static function logError($msg) {
         $linea = '[' . date('Y-m-d H:i:s') . '] ' . $msg . PHP_EOL;
+        // Guardamos tanto en appModulo1/errores.log como en 12-sesion/errores.log
         @file_put_contents(self::$log, $linea, FILE_APPEND | LOCK_EX);
+        @file_put_contents(__DIR__ . '/../../errores.log', $linea, FILE_APPEND | LOCK_EX);
     }
 
     public static function getConnection() {

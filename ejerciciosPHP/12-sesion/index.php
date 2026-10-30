@@ -43,9 +43,14 @@ $idSesion = $_SESSION['identificativo'] ?? session_id();
       <p><b>ID de Sesión:</b> <?= htmlspecialchars($idSesion) ?></p>
     </div>
 
-    <div class="botones-fila">
-      <button type="button" id="btContinuar" class="btn-principal">Ingresar al Dashboard (appModulo1)</button>
-      <button type="button" id="btSalir" class="btn-secundario">Cerrar Sesión</button>
+    <div class="botones-fila" style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button type="button" id="btContinuar" class="btn-principal" style="flex: 2;">Ingresar al Dashboard (appModulo1)</button>
+        <button type="button" id="btSalir" class="btn-secundario" style="flex: 1;">Cerrar Sesión</button>
+      </div>
+      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario" style="text-align: center; text-decoration: none; background: #4a5568; color: white; border: none; padding: 9px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        📥 Descargar Registro de Errores (.txt)
+      </a>
     </div>
   </div>
 

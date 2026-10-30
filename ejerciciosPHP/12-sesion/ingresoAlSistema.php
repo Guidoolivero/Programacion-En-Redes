@@ -21,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include __DIR__ . '/datosConexionBase.php';
 
 // ========================================================================================
-// FUNCIÓN: autenticacion($log, $cl) (Pág. 6 y 7 del apunte)
+// FUNCIÓN: autenticacion($log, $cl, &$nuevoContador) (Pág. 6 y 7 del apunte)
 // Toma usuario y clave, calcula el hash SHA-256 y compara contra la tabla `usuarios`.
 // Si es válido, incrementa en 1 el contador en la BD y guarda el nuevo valor en $nuevoContador.
 // ========================================================================================
@@ -58,6 +58,8 @@ function autenticacion($log, $cl, &$nuevoContador) {
         }
         return false;
     } catch (PDOException $e) {
+        $logPath = __DIR__ . '/errores.log';
+        @file_put_contents($logPath, '[' . date('Y-m-d H:i:s') . '] Login Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND | LOCK_EX);
         return false;
     }
 }
@@ -125,10 +127,15 @@ function infoDeSesion() {
       Seleccione una acción para continuar:
     </p>
 
-    <!-- Botones requeridos por el apunte en la página 8 -->
-    <div class="botones-fila">
-      <button type="button" id="btAppModulo1" class="btn-principal">Ingresar al Módulo (Dashboard CRUD)</button>
-      <button type="button" id="btSalida" class="btn-secundario">Abandonar Sesión</button>
+    <!-- Botones requeridos por el apunte en la página 8 y botón de descarga de errores -->
+    <div class="botones-fila" style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button type="button" id="btAppModulo1" class="btn-principal" style="flex: 2;">Ingresar al Módulo (Dashboard CRUD)</button>
+        <button type="button" id="btSalida" class="btn-secundario" style="flex: 1;">Abandonar Sesión</button>
+      </div>
+      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario" style="text-align: center; text-decoration: none; background: #4a5568; color: white; border: none; padding: 9px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        📥 Descargar Registro de Errores (.txt)
+      </a>
     </div>
   </div>
 
