@@ -14,19 +14,45 @@ class RenglonesModel {
         return $this->pdo;
     }
 
+    // Helper robusto para buscar una columna sin colisiones
+    private function buscarColumna($cols, $candidatos) {
+        foreach ($candidatos as $cand) {
+            foreach ($cols as $c) {
+                if (strcasecmp($c, $cand) === 0) return $c;
+            }
+        }
+        foreach ($candidatos as $cand) {
+            foreach ($cols as $c) {
+                if (stripos($c, $cand) !== false) return $c;
+            }
+        }
+        return null;
+    }
+
     // Helper para mapear columnas según el esquema real de la tabla
     private function detectarColumnas() {
         $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
+
+        $colNro   = $this->buscarColumna($cols, ['nroFactura', 'nro_factura', 'numero_factura', 'nro']) ?? ($cols[0] ?? 'nroFactura');
+        $colFecha = $this->buscarColumna($cols, ['fechaFactura', 'fecha_factura', 'fecha']) ?? ($cols[1] ?? 'fechaFactura');
+        $colCod   = $this->buscarColumna($cols, ['codArticulo', 'cod_articulo', 'codigo_articulo', 'cod_art', 'articulo']) ?? ($cols[2] ?? 'codArticulo');
+        $colDesc  = $this->buscarColumna($cols, ['descripcion', 'detalle', 'desc']) ?? ($cols[3] ?? 'descripcion');
+        $colUm    = $this->buscarColumna($cols, ['unidadMedida', 'unidad_medida', 'codUm', 'cod_um', 'id_unidad', 'um', 'unidad']) ?? ($cols[4] ?? 'unidadMedida');
+        $colCant  = $this->buscarColumna($cols, ['cantidad', 'cant']) ?? ($cols[5] ?? 'cantidad');
+        $colPrec  = $this->buscarColumna($cols, ['precioUnitario', 'precio_unitario', 'precio']) ?? ($cols[6] ?? 'precioUnitario');
+        $colImp   = $this->buscarColumna($cols, ['importeRenglon', 'importe_renglon', 'importe', 'total']) ?? ($cols[7] ?? 'importeRenglon');
+        $colPdf   = $this->buscarColumna($cols, ['documentoPdf', 'documento_pdf', 'pdf']);
+
         return [
-            'nro'    => in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : ($cols[0] ?? 'nroFactura')),
-            'fecha'  => in_array('fechaFactura', $cols) ? 'fechaFactura' : (in_array('fecha_factura', $cols) ? 'fecha_factura' : (in_array('fecha', $cols) ? 'fecha' : ($cols[1] ?? 'fechaFactura'))),
-            'cod'    => in_array('codArticulo', $cols) ? 'codArticulo' : (in_array('cod_articulo', $cols) ? 'cod_articulo' : ($cols[2] ?? 'codArticulo')),
-            'desc'   => in_array('descripcion', $cols) ? 'descripcion' : ($cols[3] ?? 'descripcion'),
-            'um'     => in_array('unidadMedida', $cols) ? 'unidadMedida' : (in_array('unidad_medida', $cols) ? 'unidad_medida' : (in_array('codUm', $cols) ? 'codUm' : ($cols[4] ?? 'unidadMedida'))),
-            'cant'   => in_array('cantidad', $cols) ? 'cantidad' : ($cols[5] ?? 'cantidad'),
-            'prec'   => in_array('precioUnitario', $cols) ? 'precioUnitario' : (in_array('precio_unitario', $cols) ? 'precio_unitario' : ($cols[6] ?? 'precioUnitario')),
-            'imp'    => in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : ($cols[7] ?? 'importeRenglon'))),
-            'pdf'    => in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : (in_array('pdf', $cols) ? 'pdf' : null)),
+            'nro'   => $colNro,
+            'fecha' => $colFecha,
+            'cod'   => $colCod,
+            'desc'  => $colDesc,
+            'um'    => $colUm,
+            'cant'  => $colCant,
+            'prec'  => $colPrec,
+            'imp'   => $colImp,
+            'pdf'   => $colPdf,
         ];
     }
 
