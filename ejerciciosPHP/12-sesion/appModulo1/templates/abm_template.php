@@ -53,7 +53,7 @@
             <th data-campo="precioUnitario">Precio</th>
             <th data-campo="importeRenglon">Importe</th>
             <th>PDFs</th>
-            <th>Modis</th>
+            <th>Modificar</th>
             <th>Bajas</th>
           </tr>
           <tr class="filtros">
@@ -106,7 +106,7 @@
         <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadModi" step="0.01" required></label>
         <label>Precio unitario: <input type="number" name="precioUnitario" id="formArticulosEntPrecioModi" step="0.01" required></label>
         <label>Documento PDF: <input type="file" name="documentoPdf" id="formArticulosEntDocumentoPdfModi" accept="application/pdf"></label>
-        <button type="submit" id="btEnvioFormModi" disabled>Enviar Modi</button>
+        <button type="submit" id="btEnvioFormModi" disabled>Enviar Modificación</button>
       </form>
     </div>
   </div>
@@ -187,10 +187,10 @@
       });
 
       // Handlers para validar entradas con keyup y change (Págs. 1, 6, 7)
-      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change", function() {
+      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change input", function() {
         todoListoParaAlta();
       });
-      $("#formArticulosModi input, #formArticulosModi select").on("keyup change", function() {
+      $("#formArticulosModi input, #formArticulosModi select").on("keyup change input", function() {
         todoListoParaModi();
       });
 
@@ -324,10 +324,10 @@
         };
         objTr.appendChild(tdPdf);
 
-        // Columna Modi (Pág. 8)
+        // Columna Modificar (Pág. 8)
         var tdModi = document.createElement("td");
         tdModi.setAttribute("campo-dato", "articulos_btModi");
-        tdModi.innerHTML = "<button type='button' class='btCelda btCeldaModi'>Modi</button>";
+        tdModi.innerHTML = "<button type='button' class='btCelda btCeldaModi'>Modificar</button>";
         tdModi.onclick = function() {
           $("#contenedorTablaArticulos").addClass("contenedorPasivo");
           $("#ventanaModalFormularioModi").css("visibility", "visible").addClass("activo");

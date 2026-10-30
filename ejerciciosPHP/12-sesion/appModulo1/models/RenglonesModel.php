@@ -14,6 +14,22 @@ class RenglonesModel {
         return $this->pdo;
     }
 
+    // Helper para mapear columnas según el esquema real de la tabla
+    private function detectarColumnas() {
+        $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
+        return [
+            'nro'    => in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : ($cols[0] ?? 'nroFactura')),
+            'fecha'  => in_array('fechaFactura', $cols) ? 'fechaFactura' : (in_array('fecha_factura', $cols) ? 'fecha_factura' : (in_array('fecha', $cols) ? 'fecha' : ($cols[1] ?? 'fechaFactura'))),
+            'cod'    => in_array('codArticulo', $cols) ? 'codArticulo' : (in_array('cod_articulo', $cols) ? 'cod_articulo' : ($cols[2] ?? 'codArticulo')),
+            'desc'   => in_array('descripcion', $cols) ? 'descripcion' : ($cols[3] ?? 'descripcion'),
+            'um'     => in_array('unidadMedida', $cols) ? 'unidadMedida' : (in_array('unidad_medida', $cols) ? 'unidad_medida' : (in_array('codUm', $cols) ? 'codUm' : ($cols[4] ?? 'unidadMedida'))),
+            'cant'   => in_array('cantidad', $cols) ? 'cantidad' : ($cols[5] ?? 'cantidad'),
+            'prec'   => in_array('precioUnitario', $cols) ? 'precioUnitario' : (in_array('precio_unitario', $cols) ? 'precio_unitario' : ($cols[6] ?? 'precioUnitario')),
+            'imp'    => in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : ($cols[7] ?? 'importeRenglon'))),
+            'pdf'    => in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : (in_array('pdf', $cols) ? 'pdf' : null)),
+        ];
+    }
+
     public function getUnidades() {
         if (!$this->pdo) return [];
         try {
@@ -38,72 +54,61 @@ class RenglonesModel {
         }
 
         try {
-            $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
-            $colNro   = in_array('nroFactura', $cols) ? 'nroFactura' : (in_array('nro_factura', $cols) ? 'nro_factura' : ($cols[0] ?? 'nroFactura'));
-            $colFecha = in_array('fechaFactura', $cols) ? 'fechaFactura' : (in_array('fecha_factura', $cols) ? 'fecha_factura' : (in_array('fecha', $cols) ? 'fecha' : ($cols[1] ?? 'fechaFactura')));
-            $colCod   = in_array('codArticulo', $cols) ? 'codArticulo' : (in_array('cod_articulo', $cols) ? 'cod_articulo' : ($cols[2] ?? 'codArticulo'));
-            $colDesc  = in_array('descripcion', $cols) ? 'descripcion' : ($cols[3] ?? 'descripcion');
-            $colUm    = in_array('unidadMedida', $cols) ? 'unidadMedida' : (in_array('unidad_medida', $cols) ? 'unidad_medida' : (in_array('codUm', $cols) ? 'codUm' : ($cols[4] ?? 'unidadMedida')));
-            $colCant  = in_array('cantidad', $cols) ? 'cantidad' : ($cols[5] ?? 'cantidad');
-            $colPrec  = in_array('precioUnitario', $cols) ? 'precioUnitario' : (in_array('precio_unitario', $cols) ? 'precio_unitario' : ($cols[6] ?? 'precioUnitario'));
-            $colImp   = in_array('importeRenglon', $cols) ? 'importeRenglon' : (in_array('importe_renglon', $cols) ? 'importe_renglon' : (in_array('importe', $cols) ? 'importe' : ($cols[7] ?? 'importeRenglon')));
-            $colPdf   = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : (in_array('pdf', $cols) ? 'pdf' : null));
+            $c = $this->detectarColumnas();
 
             $mapaOrden = [
-                'nroFactura'     => $colNro,
-                'codArticulo'    => $colCod,
-                'unidadMedida'   => $colUm,
-                'descripcion'    => $colDesc,
-                'fechaFactura'   => $colFecha,
-                'cantidad'       => $colCant,
-                'precioUnitario' => $colPrec,
-                'importeRenglon' => $colImp,
+                'nroFactura'     => $c['nro'],
+                'codArticulo'    => $c['cod'],
+                'unidadMedida'   => $c['um'],
+                'descripcion'    => $c['desc'],
+                'fechaFactura'   => $c['fecha'],
+                'cantidad'       => $c['cant'],
+                'precioUnitario' => $c['prec'],
+                'importeRenglon' => $c['imp'],
             ];
-            $colOrdenSql = $mapaOrden[$orden] ?? $colNro;
+            $colOrden = $mapaOrden[$orden] ?? $c['nro'];
 
-            $sql = "SELECT * FROM renglones_factura WHERE 1=1";
+            $condiciones = [];
             $params = [];
 
-            $fNro   = trim($filtros['f_nroFactura'] ?? '');
-            $fCod   = trim($filtros['f_codArticulo'] ?? '');
-            $fUm    = trim($filtros['f_unidadMedida'] ?? '');
-            $fDesc  = trim($filtros['f_descripcion'] ?? '');
-            $fFecha = trim($filtros['f_fechaFactura'] ?? '');
+            if (!empty($filtros['f_nroFactura'])) {
+                $condiciones[] = "`{$c['nro']}` LIKE :f_nro";
+                $params[':f_nro'] = '%' . $filtros['f_nroFactura'] . '%';
+            }
+            if (!empty($filtros['f_codArticulo'])) {
+                $condiciones[] = "`{$c['cod']}` LIKE :f_cod";
+                $params[':f_cod'] = '%' . $filtros['f_codArticulo'] . '%';
+            }
+            if (!empty($filtros['f_unidadMedida'])) {
+                $condiciones[] = "`{$c['um']}` = :f_um";
+                $params[':f_um'] = $filtros['f_unidadMedida'];
+            }
+            if (!empty($filtros['f_descripcion'])) {
+                $condiciones[] = "`{$c['desc']}` LIKE :f_desc";
+                $params[':f_desc'] = '%' . $filtros['f_descripcion'] . '%';
+            }
+            if (!empty($filtros['f_fechaFactura'])) {
+                $condiciones[] = "`{$c['fecha']}` = :f_fecha";
+                $params[':f_fecha'] = $filtros['f_fechaFactura'];
+            }
 
-            if ($fNro !== '')   { $sql .= " AND `$colNro` LIKE ?";   $params[] = "%$fNro%"; }
-            if ($fCod !== '')   { $sql .= " AND `$colCod` LIKE ?";   $params[] = "%$fCod%"; }
-            if ($fUm !== '')    { $sql .= " AND (`$colUm` = ? OR `$colUm` LIKE ?)"; $params[] = $fUm; $params[] = "%$fUm%"; }
-            if ($fDesc !== '')  { $sql .= " AND `$colDesc` LIKE ?";  $params[] = "%$fDesc%"; }
-            if ($fFecha !== '') { $sql .= " AND `$colFecha` = ?";    $params[] = $fFecha; }
-
-            $sql .= " ORDER BY `$colOrdenSql`";
+            $sql = "SELECT `{$c['nro']}` AS nroFactura, `{$c['fecha']}` AS fechaFactura, `{$c['cod']}` AS codArticulo, `{$c['desc']}` AS descripcion, `{$c['um']}` AS unidadMedida, `{$c['cant']}` AS cantidad, `{$c['prec']}` AS precioUnitario, `{$c['imp']}` AS importeRenglon FROM renglones_factura";
+            if (!empty($condiciones)) {
+                $sql .= " WHERE " . implode(' AND ', $condiciones);
+            }
+            $sql .= " ORDER BY `$colOrden` ASC";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
-            $filasRaw = $stmt->fetchAll();
+            $filas = $stmt->fetchAll();
 
-            $filas = array_map(function($r) use ($colNro, $colCod, $colUm, $colDesc, $colFecha, $colCant, $colPrec, $colImp, $colPdf) {
-                $cant = $r[$colCant] ?? '';
-                $prec = $r[$colPrec] ?? '';
-                $imp  = $r[$colImp] ?? (($cant !== '' && $prec !== '') ? number_format((float)$cant * (float)$prec, 2, '.', '') : '');
-                $tienePdf = ($colPdf && !empty($r[$colPdf])) ? 1 : 0;
-                return [
-                    'nroFactura'     => $r[$colNro] ?? '',
-                    'codArticulo'    => $r[$colCod] ?? '',
-                    'unidadMedida'   => $r[$colUm] ?? '',
-                    'descripcion'    => $r[$colDesc] ?? '',
-                    'fechaFactura'   => $r[$colFecha] ?? '',
-                    'cantidad'       => $cant,
-                    'precioUnitario' => $prec,
-                    'importeRenglon' => $imp,
-                    'tienePdf'       => $tienePdf,
-                ];
-            }, $filasRaw);
-
-            return ['renglones' => $filas, 'cantidad' => count($filas)];
+            return [
+                'renglones' => $filas,
+                'cantidad'  => count($filas),
+            ];
         } catch (PDOException $e) {
             Database::logError('Renglones: ' . $e->getMessage());
-            return ['error' => $e->getMessage(), 'renglones' => [], 'cantidad' => 0];
+            return ['renglones' => [], 'cantidad' => 0];
         }
     }
 
@@ -133,7 +138,9 @@ class RenglonesModel {
         $traza .= "importeRenglon: " . $importe . "\n";
 
         try {
-            $sql = "INSERT INTO renglones_factura (nroFactura, fechaFactura, codArticulo, descripcion, unidadMedida, cantidad, precioUnitario, importeRenglon) VALUES (:nroFactura, :fechaFactura, :codArticulo, :descripcion, :unidadMedida, :cantidad, :precioUnitario, :importeRenglon)";
+            $c = $this->detectarColumnas();
+
+            $sql = "INSERT INTO renglones_factura (`{$c['nro']}`, `{$c['fecha']}`, `{$c['cod']}`, `{$c['desc']}`, `{$c['um']}`, `{$c['cant']}`, `{$c['prec']}`, `{$c['imp']}`) VALUES (:nroFactura, :fechaFactura, :codArticulo, :descripcion, :unidadMedida, :cantidad, :precioUnitario, :importeRenglon)";
             $stmt = $this->pdo->prepare($sql);
             $traza .= "\nPreparacion exitosa!";
 
@@ -154,11 +161,9 @@ class RenglonesModel {
             // Manejo de archivo PDF binario si se envió
             if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
                 try {
-                    $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
-                    $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
-                    if ($colPdf) {
+                    if ($c['pdf']) {
                         $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
-                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `$colPdf` = :doc WHERE nroFactura = :nro AND codArticulo = :cod");
+                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `{$c['pdf']}` = :doc WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
                         $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
                         $stmtPdf->bindParam(':nro', $nro);
                         $stmtPdf->bindParam(':cod', $cod);
@@ -197,7 +202,9 @@ class RenglonesModel {
         $traza .= "nroFactura: $nro / codArticulo: $cod\n";
 
         try {
-            $sql = "UPDATE renglones_factura SET fechaFactura=:fechaFactura, descripcion=:descripcion, unidadMedida=:unidadMedida, cantidad=:cantidad, precioUnitario=:precioUnitario, importeRenglon=:importeRenglon WHERE nroFactura=:nroFactura AND codArticulo=:codArticulo";
+            $c = $this->detectarColumnas();
+
+            $sql = "UPDATE renglones_factura SET `{$c['fecha']}`=:fechaFactura, `{$c['desc']}`=:descripcion, `{$c['um']}`=:unidadMedida, `{$c['cant']}`=:cantidad, `{$c['prec']}`=:precioUnitario, `{$c['imp']}`=:importeRenglon WHERE `{$c['nro']}`=:nroFactura AND `{$c['cod']}`=:codArticulo";
             $stmt = $this->pdo->prepare($sql);
             $traza .= "\nPreparacion exitosa!";
 
@@ -218,11 +225,9 @@ class RenglonesModel {
             // Manejo de archivo PDF binario si se envió
             if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
                 try {
-                    $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
-                    $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
-                    if ($colPdf) {
+                    if ($c['pdf']) {
                         $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
-                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `$colPdf` = :doc WHERE nroFactura = :nro AND codArticulo = :cod");
+                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `{$c['pdf']}` = :doc WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
                         $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
                         $stmtPdf->bindParam(':nro', $nro);
                         $stmtPdf->bindParam(':cod', $cod);
@@ -249,7 +254,9 @@ class RenglonesModel {
         }
 
         try {
-            $sql = "DELETE FROM renglones_factura WHERE nroFactura=:nroFactura AND codArticulo=:codArticulo";
+            $c = $this->detectarColumnas();
+
+            $sql = "DELETE FROM renglones_factura WHERE `{$c['nro']}`=:nroFactura AND `{$c['cod']}`=:codArticulo";
             $stmt = $this->pdo->prepare($sql);
             $traza .= "Preparacion exitosa!\n";
 
@@ -271,17 +278,16 @@ class RenglonesModel {
     public function getPdfBase64($nroFactura, $codArticulo) {
         if (!$this->pdo) return null;
         try {
-            $cols = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_COLUMN);
-            $colPdf = in_array('documentoPdf', $cols) ? 'documentoPdf' : (in_array('documento_pdf', $cols) ? 'documento_pdf' : null);
-            if (!$colPdf) return null;
+            $c = $this->detectarColumnas();
+            if (!$c['pdf']) return null;
 
-            $stmt = $this->pdo->prepare("SELECT `$colPdf` FROM renglones_factura WHERE nroFactura = :nro AND codArticulo = :cod");
+            $stmt = $this->pdo->prepare("SELECT `{$c['pdf']}` FROM renglones_factura WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
             $stmt->bindParam(':nro', $nroFactura);
             $stmt->bindParam(':cod', $codArticulo);
             $stmt->execute();
             $fila = $stmt->fetch();
-            if ($fila && !empty($fila[$colPdf])) {
-                return base64_encode($fila[$colPdf]);
+            if ($fila && !empty($fila[$c['pdf']])) {
+                return base64_encode($fila[$c['pdf']]);
             }
             return null;
         } catch (PDOException $e) {
