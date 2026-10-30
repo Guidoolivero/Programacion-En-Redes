@@ -16,14 +16,18 @@ class RenglonesModel {
 
     // Helper robusto para buscar una columna sin colisiones
     private function buscarColumna($cols, $candidatos) {
+        // 1. Coincidencia EXACTA (evita falsos positivos)
         foreach ($candidatos as $cand) {
             foreach ($cols as $c) {
                 if (strcasecmp($c, $cand) === 0) return $c;
             }
         }
+        // 2. Coincidencia parcial sólo si la palabra candidata tiene más de 3 letras
         foreach ($candidatos as $cand) {
-            foreach ($cols as $c) {
-                if (stripos($c, $cand) !== false) return $c;
+            if (strlen($cand) > 3) {
+                foreach ($cols as $c) {
+                    if (stripos($c, $cand) !== false) return $c;
+                }
             }
         }
         return null;
@@ -224,7 +228,7 @@ class RenglonesModel {
         $precio  = (float)($datos['precioUnitario'] ?? 0);
         $importe = $cant * $precio;
 
-        $traza .= "Parte Modificacion simple de datos <br />\n";
+        $traza .= "Parte Modificacion simple de datos\n";
         $traza .= "nroFactura: $nro / codArticulo: $cod\n";
 
         try {
