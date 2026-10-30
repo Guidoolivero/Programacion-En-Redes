@@ -182,6 +182,9 @@
         $("#contenedorTablaArticulos").addClass("contenedorPasivo");
         document.getElementById("formArticulosAlta").reset();
         poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
+        // Asignar por defecto la fecha de hoy en formato YYYY-MM-DD (modificable por el usuario)
+        const hoy = new Date().toISOString().substring(0, 10);
+        $("#formArticulosEntFechaAlta").val(hoy);
         $("#btEnvioFormAlta").attr("disabled", true);
         $("#ventanaModalFormularioAlta").css("visibility", "visible").addClass("activo");
       });
