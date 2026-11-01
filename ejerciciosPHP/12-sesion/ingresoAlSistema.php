@@ -115,10 +115,9 @@ function infoDeSesion() {
   <link rel="stylesheet" href="estiloLogin.css">
 </head>
 <body>
-  <!-- Botones de navegación al menú general y al menú de ejercicios PHP -->
+  <!-- Botón para volver al menú principal del sitio (htdocs/index.html) -->
   <div class="nav-volver-top">
-    <a class="btn-volver" href="../../index.html">Menú General</a>
-    <a class="btn-volver" href="../index.php">Menú PHP</a>
+    <a class="btn-volver" href="../../index.html">Volver al menú</a>
   </div>
 
   <div class="contenedor-card" style="max-width: 580px;">
