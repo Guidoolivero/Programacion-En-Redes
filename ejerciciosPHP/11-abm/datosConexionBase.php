@@ -1,5 +1,5 @@
 <?php
-$host = 'sql111.infinityfree.com';
-$dbname = 'if0_42934198_facturacion';
-$username = 'if0_42934198';
-$password = 'dcyFb22feWoUQ';
+$host = 'localhost';
+$dbname = 'u755013919_facturacion';
+$username = 'u755013919_admin';
+$password = '7243Noble';
