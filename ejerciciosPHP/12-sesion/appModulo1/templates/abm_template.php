@@ -72,11 +72,67 @@
     <footer><p>Renglones de factura de ventas — Módulo 1 protegido por Sesión — Guido Olivero</p></footer>
   </div>
 
-  <!-- Modales (Alta, Modi, Respuesta, PDF) se mantienen igual -->
-  <div class="modal" id="ventanaModalFormularioAlta"><!-- ... --></div>
-  <div class="modal" id="ventanaModalFormularioModi"><!-- ... --></div>
-  <div class="modal" id="ventanaModalRespuesta"><!-- ... --></div>
-  <div class="modal" id="ventanaModalPdf"><!-- ... --></div>
+  <!-- Modal Formulario de Alta -->
+  <div class="modal" id="ventanaModalFormularioAlta">
+    <div class="modal-box">
+      <span class="cerrar" onclick="cerrarModalAlta()">&times;</span>
+      <h3>Formulario de Alta</h3>
+      <form id="formArticulosAlta" method="post" enctype="multipart/form-data">
+        <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroAlta" required></label>
+        <label>Fecha: <input type="date" name="fechaFactura" id="formArticulosEntFechaAlta" required></label>
+        <label>Cod. artículo:
+          <input type="text" name="codArticulo" id="formArticulosEntCodArtAlta" required>
+          <span id="msgErrorCodArtAlta" style="color: #c53030; font-size: 12px; font-weight: bold; display: none; margin-top: 4px;"></span>
+        </label>
+        <label>Descripción: <input type="text" name="descripcion" id="formArticulosEntDescripcionAlta" required></label>
+        <label>Unidad de medida: <select name="unidadMedida" id="formArticulosEntUmAlta" required></select></label>
+        <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadAlta" step="0.01" required></label>
+        <label>Precio unitario: <input type="number" name="precioUnitario" id="formArticulosEntPrecioAlta" step="0.01" required></label>
+        <label>Documento PDF: <input type="file" name="documentoPdf" id="formArticulosEntDocumentoPdfAlta" accept="application/pdf"></label>
+        <button type="submit" id="btEnvioFormAlta" disabled>Enviar Alta</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Formulario de Modificación -->
+  <div class="modal" id="ventanaModalFormularioModi">
+    <div class="modal-box">
+      <span class="cerrar" onclick="cerrarModalModi()">&times;</span>
+      <h3>Formulario de Modificación</h3>
+      <form id="formArticulosModi" method="post" enctype="multipart/form-data">
+        <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroModi" readonly required></label>
+        <label>Fecha: <input type="date" name="fechaFactura" id="formArticulosEntFechaModi" required></label>
+        <label>Cod. artículo: <input type="text" name="codArticulo" id="formArticulosEntCodArtModi" readonly required></label>
+        <label>Descripción: <input type="text" name="descripcion" id="formArticulosEntDescripcionModi" required></label>
+        <label>Unidad de medida: <select name="unidadMedida" id="formArticulosEntUmModi" required></select></label>
+        <label>Cantidad: <input type="number" name="cantidad" id="formArticulosEntCantidadModi" step="0.01" required></label>
+        <label>Precio unitario: <input type="number" name="precioUnitario" id="formArticulosEntPrecioModi" step="0.01" required></label>
+        <label>Documento PDF: <input type="file" name="documentoPdf" id="formArticulosEntDocumentoPdfModi" accept="application/pdf"></label>
+        <button type="submit" id="btEnvioFormModi" disabled>Enviar Modificación</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Respuesta del Servidor -->
+  <div class="modal" id="ventanaModalRespuesta">
+    <div class="modal-box">
+      <span class="cerrar" onclick="cerrarModalRespuesta()">&times;</span>
+      <div id="encabezadoModalRespuesta">Respuesta del server:</div>
+      <div id="contenidoModalRespuesta"></div>
+      <div id="pieModalRespuesta">
+        <button type="button" onclick="cerrarModalRespuesta()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Visor PDF -->
+  <div class="modal" id="ventanaModalPdf">
+    <div class="modal-box" style="max-width: 750px; height: 80vh;">
+      <span class="cerrar" onclick="cerrarModalPdf()">&times;</span>
+      <h3>Visualizador de PDF</h3>
+      <iframe id="iframePdf" style="width: 100%; height: calc(100% - 40px); border: none;"></iframe>
+    </div>
+  </div>
 
   <script src="jquery.js"></script>
   <script src="abm.js"></script>
