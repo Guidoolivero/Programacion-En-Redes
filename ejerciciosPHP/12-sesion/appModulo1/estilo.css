@@ -51,9 +51,8 @@ h1 { text-align: center; }
 }
 .controles button:hover { background: #e2e8f0; }
 
-.tabla-wrap { max-height: 420px; overflow-y: auto; border: 1px solid #ccc; }
-table { width: 100%; border-collapse: collapse; background: #ddd; }
-thead { position: sticky; top: 0; }
+.tabla-wrap { max-width: 100%; overflow-x: auto; border: 1px solid #ccc; }
+table { width: 100%; min-width: 1100px; border-collapse: collapse; background: #ddd; }
 .titulos th { background: #e07070; color: #222; padding: 8px; cursor: pointer; }
 .filtros td { background: #e07070; padding: 4px; }
 .filtros input, .filtros select { width: 100%; box-sizing: border-box; }
@@ -132,3 +131,20 @@ footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10p
   justify-content: flex-end;
 }
 #pieModalRespuesta button { padding: 6px 14px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+@media (max-width: 768px) {
+  body { margin: 12px; padding-top: 0; }
+  h1 { font-size: 24px; overflow-wrap: anywhere; }
+  #contenedorTablaArticulos { min-width: 0; overflow-wrap: anywhere; }
+  .nav-volver-top { position: static; flex-wrap: wrap; margin-bottom: 20px; }
+  .btn-volver, .controles button, .btCelda { min-height: 44px; box-sizing: border-box; }
+  .btn-volver { display: inline-flex; align-items: center; }
+  .controles { justify-content: flex-start; }
+  .controles label { flex-basis: 100%; }
+  .controles input { flex: 1; min-width: 0; }
+  .controles button { flex: 1 1 140px; }
+  .tabla-wrap { overflow-wrap: normal; }
+  .filtros input, .filtros select { min-height: 44px; font-size: 16px; }
+  .modal-box { box-sizing: border-box; width: calc(100% - 24px); padding: 16px; }
+  .modal-box input, .modal-box select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; font-size: 16px; }
+}

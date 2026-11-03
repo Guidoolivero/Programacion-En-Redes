@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>appModulo1 — Renglones de Factura (Protegido por Sesión)</title>
   <link rel="stylesheet" href="estilo.css">
   <script src="jquery.js"></script>
@@ -39,7 +40,7 @@
       <button type="button" id="btCierraSesion" style="background:#e53e3e; color:white; border-color:#c53030; font-weight:bold;">Cierra Sesión</button>
     </div>
 
-    <div class="tabla-wrap">
+    <div class="tabla-wrap" role="region" aria-label="Renglones de factura" tabindex="0">
       <table>
         <thead>
           <tr class="titulos">
