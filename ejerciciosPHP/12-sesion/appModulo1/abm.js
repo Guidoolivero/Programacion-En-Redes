@@ -118,6 +118,9 @@
         alta();
       });
       $("#formArticulosModi").submit(function(e) {
+        e.preventDefault();
+        modi();
+      });
     });
 
     // Sincroniza en segundo plano los pares (nroFactura||codArticulo) existentes

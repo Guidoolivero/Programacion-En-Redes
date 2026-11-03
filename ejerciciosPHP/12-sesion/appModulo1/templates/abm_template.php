@@ -134,7 +134,6 @@
     </div>
   </div>
 
-  <script src="jquery.js"></script>
   <script src="abm.js"></script>
 </body>
 </html>
