@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>appModulo1 — Renglones de Factura (Protegido por Sesión)</title>
-  <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="estilo.css?v=20261103-2">
   <script src="jquery.js"></script>
 </head>
 <body>
@@ -41,7 +41,7 @@
     </div>
 
     <div class="tabla-wrap" role="region" aria-label="Renglones de factura" tabindex="0">
-      <table>
+      <table role="table">
         <thead>
           <tr class="titulos">
             <th data-campo="nroFactura">Nro Factura</th>
