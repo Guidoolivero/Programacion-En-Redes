@@ -455,3 +455,4 @@
       $("#ventanaModalPdf").css("visibility", "hidden").removeClass("activo");
       document.getElementById('iframePdf').src = "";
       $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
+    }
