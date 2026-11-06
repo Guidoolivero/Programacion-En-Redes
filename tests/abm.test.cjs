@@ -213,9 +213,9 @@ test('Cerrar sesión conserva la navegación al PHP correspondiente', async t =>
   await expect(page).toHaveURL('https://abm.test/destruirsesion.php');
 });
 
-test('La aplicación usa AJAX XMLHttpRequest sin cargar jQuery', async t => {
+test('La aplicación usa fetch sin cargar jQuery', async t => {
   const { page, estado } = await abrirApp(t);
   assert.equal(await page.evaluate(() => typeof window.jQuery), 'undefined');
-  assert(estado.peticiones.every(p => p.tipo === 'xhr'));
+  assert(estado.peticiones.every(p => p.tipo === 'fetch'));
   assert.deepEqual(estado.errores, []);
 });

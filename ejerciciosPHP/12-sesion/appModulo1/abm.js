@@ -102,27 +102,19 @@ function filtrarConDemora() {
 }
 
 // AJAX común a todas las consultas: al terminar, llama a la función recibida.
-function enviarAjax(url, datos, alResponder, alError) {
-  var peticion = new XMLHttpRequest();
-  var metodo = "POST";
-  if (datos === null) metodo = "GET";
-  peticion.open(metodo, url, true);
-  peticion.onload = function() {
-    try {
-      alResponder(peticion.responseText);
-    } catch (error) {
-      if (alError) alError(error);
-    }
-  };
-  peticion.onerror = function() {
-    if (alError) alError(new Error("No se pudo conectar con el servidor."));
-  };
-  if (datos instanceof URLSearchParams) {
-    peticion.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-    datos = datos.toString();
+async function enviarAjax(url, datos, alResponder, alError) {
+  var opciones = { method: "GET" };
+  if (datos !== null) {
+    opciones.method = "POST";
+    opciones.body = datos;
   }
-  // FormData incluye el PDF y deja que el navegador prepare su Content-Type.
-  peticion.send(datos);
+  try {
+    var respuesta = await fetch(url, opciones);
+    var texto = await respuesta.text();
+    alResponder(texto);
+  } catch (error) {
+    if (alError) alError(error);
+  }
 }
 
 function guardarRenglonesExistentes(filas) {

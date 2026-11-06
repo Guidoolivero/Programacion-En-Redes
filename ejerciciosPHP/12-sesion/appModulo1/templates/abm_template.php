@@ -134,6 +134,6 @@
     </div>
   </div>
 
-  <script src="abm.js?v=20261106-ajax"></script>
+  <script src="abm.js?v=20261106-fetch"></script>
 </body>
 </html>
