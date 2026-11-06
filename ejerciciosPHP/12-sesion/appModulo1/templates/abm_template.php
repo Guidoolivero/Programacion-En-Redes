@@ -75,7 +75,7 @@
   <!-- Modal Formulario de Alta -->
   <div class="modal" id="ventanaModalFormularioAlta">
     <div class="modal-box">
-      <span class="cerrar" onclick="cerrarModalAlta()">&times;</span>
+      <span class="cerrar" onclick="cerrarFormularioAlta()">&times;</span>
       <h3>Formulario de Alta</h3>
       <form id="formArticulosAlta" method="post" enctype="multipart/form-data">
         <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroAlta" required></label>
@@ -97,7 +97,7 @@
   <!-- Modal Formulario de Modificación -->
   <div class="modal" id="ventanaModalFormularioModi">
     <div class="modal-box">
-      <span class="cerrar" onclick="cerrarModalModi()">&times;</span>
+      <span class="cerrar" onclick="cerrarFormularioModificacion()">&times;</span>
       <h3>Formulario de Modificación</h3>
       <form id="formArticulosModi" method="post" enctype="multipart/form-data">
         <label>Nro Factura: <input type="text" name="nroFactura" id="formArticulosEntNroModi" readonly required></label>
@@ -116,11 +116,11 @@
   <!-- Modal de Respuesta del Servidor -->
   <div class="modal" id="ventanaModalRespuesta">
     <div class="modal-box">
-      <span class="cerrar" onclick="cerrarModalRespuesta()">&times;</span>
+      <span class="cerrar" onclick="cerrarRespuestaServidor()">&times;</span>
       <div id="encabezadoModalRespuesta">Respuesta del server:</div>
       <div id="contenidoModalRespuesta"></div>
       <div id="pieModalRespuesta">
-        <button type="button" onclick="cerrarModalRespuesta()">Aceptar</button>
+        <button type="button" onclick="cerrarRespuestaServidor()">Aceptar</button>
       </div>
     </div>
   </div>
@@ -128,12 +128,12 @@
   <!-- Modal Visor PDF -->
   <div class="modal" id="ventanaModalPdf">
     <div class="modal-box" style="max-width: 750px; height: 80vh;">
-      <span class="cerrar" onclick="cerrarModalPdf()">&times;</span>
+      <span class="cerrar" onclick="cerrarVistaPreviaPdf()">&times;</span>
       <h3>Visualizador de PDF</h3>
       <iframe id="iframePdf" style="width: 100%; height: calc(100% - 40px); border: none;"></iframe>
     </div>
   </div>
 
-  <script src="abm.js?v=20261106-fetch"></script>
+  <script src="abm.js?v=20261106-nombres"></script>
 </body>
 </html>

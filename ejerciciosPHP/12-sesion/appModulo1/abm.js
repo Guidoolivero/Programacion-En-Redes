@@ -1,18 +1,18 @@
-var objGlobalFamilias = { unidades: [] };
-var renglonesExistentes = [];
-var timerFiltro = null;
-var reqRenglonesActual = 0;
-var objTbDatos;
-var objCodArtAlta;
+var datosUnidades = { unidades: [] };
+var clavesRenglonesExistentes = [];
+var temporizadorFiltro = null;
+var ultimaPeticionListado = 0;
+var cuerpoTabla;
+var campoCodigoArticuloAlta;
 
 document.addEventListener("DOMContentLoaded", function() {
-  objTbDatos = document.getElementById("tbDatos");
-  objCodArtAlta = document.getElementById("formArticulosEntCodArtAlta");
+  cuerpoTabla = document.getElementById("tbDatos");
+  campoCodigoArticuloAlta = document.getElementById("formArticulosEntCodArtAlta");
   document.getElementById("orden").value = "nroFactura";
   document.getElementById("btEnvioFormAlta").disabled = true;
   document.getElementById("btEnvioFormModi").disabled = true;
   cargarUnidades();
-  sincronizarRenglonesExistentes();
+  actualizarClavesExistentes();
 
   document.getElementById("btCierraSesion").onclick = function() {
     location.href = "../destruirsesion.php";
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
     cargarDatos(false);
   };
   document.getElementById("btnVaciar").onclick = function() {
-    objTbDatos.innerHTML = '<tr><td colspan="11">Sin datos.</td></tr>';
+    cuerpoTabla.innerHTML = '<tr><td colspan="11">Sin datos.</td></tr>';
     document.getElementById("pie").textContent = "Nro de registros: 0";
   };
   document.getElementById("btnLimpiar").onclick = function() {
@@ -38,19 +38,19 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   document.querySelectorAll("#f_nroFactura, #f_codArticulo, #f_descripcion").forEach(function(campo) {
-    campo.oninput = filtrarConDemora;
-    campo.onkeyup = filtrarConDemora;
+    campo.oninput = programarFiltro;
+    campo.onkeyup = programarFiltro;
     campo.onkeydown = function(evento) {
       if (evento.key === "Enter") {
         evento.preventDefault();
-        clearTimeout(timerFiltro);
+        clearTimeout(temporizadorFiltro);
         cargarDatos(true);
       }
     };
   });
   document.querySelectorAll("#f_unidadMedida, #f_fechaFactura").forEach(function(campo) {
     campo.onchange = function() {
-      clearTimeout(timerFiltro);
+      clearTimeout(temporizadorFiltro);
       cargarDatos(true);
     };
     campo.oninput = campo.onchange;
@@ -58,51 +58,51 @@ document.addEventListener("DOMContentLoaded", function() {
 
   document.getElementById("btnAlta").onclick = function() {
     document.getElementById("formArticulosAlta").reset();
-    objCodArtAlta.setCustomValidity("");
+    campoCodigoArticuloAlta.setCustomValidity("");
     document.getElementById("msgErrorCodArtAlta").textContent = "";
     document.getElementById("msgErrorCodArtAlta").style.display = "none";
-    objCodArtAlta.style.borderColor = "";
-    sincronizarRenglonesExistentes();
-    poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
+    campoCodigoArticuloAlta.style.borderColor = "";
+    actualizarClavesExistentes();
+    llenarSelectorUnidades(document.getElementById("formArticulosEntUmAlta"));
     document.getElementById("formArticulosEntFechaAlta").value = new Date().toISOString().substring(0, 10);
     document.getElementById("btEnvioFormAlta").disabled = true;
-    abrirModal("ventanaModalFormularioAlta");
+    abrirVentana("ventanaModalFormularioAlta");
   };
   document.querySelectorAll("#formArticulosAlta input, #formArticulosAlta select").forEach(function(campo) {
-    campo.onkeyup = todoListoParaAlta;
-    campo.onchange = todoListoParaAlta;
-    campo.oninput = todoListoParaAlta;
-    campo.onblur = todoListoParaAlta;
+    campo.onkeyup = validarFormularioAlta;
+    campo.onchange = validarFormularioAlta;
+    campo.oninput = validarFormularioAlta;
+    campo.onblur = validarFormularioAlta;
   });
   document.querySelectorAll("#formArticulosModi input, #formArticulosModi select").forEach(function(campo) {
-    campo.onkeyup = todoListoParaModi;
-    campo.onchange = todoListoParaModi;
-    campo.oninput = todoListoParaModi;
+    campo.onkeyup = validarFormularioModificacion;
+    campo.onchange = validarFormularioModificacion;
+    campo.oninput = validarFormularioModificacion;
   });
   document.getElementById("formArticulosAlta").onsubmit = function(evento) {
     evento.preventDefault();
-    validarRenglonUnicoAlta();
+    validarDuplicadoEnFactura();
     if (!this.checkValidity()) {
-      todoListoParaAlta();
+      validarFormularioAlta();
       return;
     }
-    alta();
+    guardarAlta();
   };
   document.getElementById("formArticulosModi").onsubmit = function(evento) {
     evento.preventDefault();
-    modi();
+    guardarModificacion();
   };
 });
 
-function filtrarConDemora() {
-  clearTimeout(timerFiltro);
-  timerFiltro = setTimeout(function() {
+function programarFiltro() {
+  clearTimeout(temporizadorFiltro);
+  temporizadorFiltro = setTimeout(function() {
     cargarDatos(true);
   }, 300);
 }
 
 // AJAX común a todas las consultas: al terminar, llama a la función recibida.
-async function enviarAjax(url, datos, alResponder, alError) {
+async function enviarPeticionAjax(url, datos, alResponder, alError) {
   var opciones = { method: "GET" };
   if (datos !== null) {
     opciones.method = "POST";
@@ -117,24 +117,24 @@ async function enviarAjax(url, datos, alResponder, alError) {
   }
 }
 
-function guardarRenglonesExistentes(filas) {
-  renglonesExistentes = [];
+function guardarClavesExistentes(filas) {
+  clavesRenglonesExistentes = [];
   filas.forEach(function(renglon) {
     if (renglon.nroFactura && renglon.codArticulo) {
       var clave = String(renglon.nroFactura).trim().toUpperCase() + "||" + String(renglon.codArticulo).trim().toUpperCase();
-      renglonesExistentes.push(clave);
+      clavesRenglonesExistentes.push(clave);
     }
   });
 }
 
-function sincronizarRenglonesExistentes(alTerminar) {
+function actualizarClavesExistentes(alTerminar) {
   var datos = new URLSearchParams();
   datos.append("orden", "nroFactura");
-  enviarAjax("salidaJsonRenglones.php", datos, function(texto) {
+  enviarPeticionAjax("salidaJsonRenglones.php", datos, function(texto) {
     var respuesta = JSON.parse(texto);
-    guardarRenglonesExistentes(respuesta.renglones || []);
+    guardarClavesExistentes(respuesta.renglones || []);
     if (document.getElementById("ventanaModalFormularioAlta").classList.contains("activo")) {
-      todoListoParaAlta();
+      validarFormularioAlta();
     }
     if (alTerminar) alTerminar();
   }, function() {
@@ -143,36 +143,36 @@ function sincronizarRenglonesExistentes(alTerminar) {
   });
 }
 
-function validarRenglonUnicoAlta() {
-  if (!objCodArtAlta) return;
-  var nro = document.getElementById("formArticulosEntNroAlta").value.trim();
-  var cod = objCodArtAlta.value.trim();
-  var clave = nro.toUpperCase() + "||" + cod.toUpperCase();
+function validarDuplicadoEnFactura() {
+  if (!campoCodigoArticuloAlta) return;
+  var numeroFactura = document.getElementById("formArticulosEntNroAlta").value.trim();
+  var codigoArticulo = campoCodigoArticuloAlta.value.trim();
+  var clave = numeroFactura.toUpperCase() + "||" + codigoArticulo.toUpperCase();
   var mensaje = document.getElementById("msgErrorCodArtAlta");
-  if (nro !== "" && cod !== "" && renglonesExistentes.includes(clave)) {
-    objCodArtAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
-    mensaje.textContent = '⚠️ La factura "' + nro + '" ya contiene el artículo "' + cod + '" (sí podés cargarlo en otra factura).';
+  if (numeroFactura !== "" && codigoArticulo !== "" && clavesRenglonesExistentes.includes(clave)) {
+    campoCodigoArticuloAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
+    mensaje.textContent = '⚠️ La factura "' + numeroFactura + '" ya contiene el artículo "' + codigoArticulo + '" (sí podés cargarlo en otra factura).';
     mensaje.style.display = "";
-    objCodArtAlta.style.borderColor = "#e53e3e";
+    campoCodigoArticuloAlta.style.borderColor = "#e53e3e";
   } else {
-    objCodArtAlta.setCustomValidity("");
+    campoCodigoArticuloAlta.setCustomValidity("");
     mensaje.textContent = "";
     mensaje.style.display = "none";
-    objCodArtAlta.style.borderColor = "";
+    campoCodigoArticuloAlta.style.borderColor = "";
   }
 }
 
 function cargarUnidades() {
-  enviarAjax("salidaJsonUnidades.php", null, function(texto) {
+  enviarPeticionAjax("salidaJsonUnidades.php", null, function(texto) {
     alert(texto);
-    objGlobalFamilias = JSON.parse(texto);
-    llenaFiltroFamilias(objGlobalFamilias);
+    datosUnidades = JSON.parse(texto);
+    llenarFiltroUnidades(datosUnidades);
   }, function(error) {
     alert("Error unidades: " + error);
   });
 }
 
-function agregarUnidades(select, unidades, valorSeleccionado) {
+function agregarOpcionesUnidades(select, unidades, valorSeleccionado) {
   unidades.forEach(function(unidad) {
     var valor = unidad.cod_um || unidad.codigo || unidad.codUm || unidad.id || unidad.descripcion || "";
     var nombre = unidad.descripcion || unidad.descripcionUm || unidad.nombre || valor;
@@ -185,28 +185,28 @@ function agregarUnidades(select, unidades, valorSeleccionado) {
   });
 }
 
-function llenaFiltroFamilias(objFamilias) {
+function llenarFiltroUnidades(respuestaUnidades) {
   var select = document.getElementById("f_unidadMedida");
   while (select.options.length > 1) select.remove(1);
-  agregarUnidades(select, objFamilias.unidades || []);
+  agregarOpcionesUnidades(select, respuestaUnidades.unidades || []);
 }
 
-function poblarSelectUnidades(select, valorSeleccionado) {
+function llenarSelectorUnidades(select, valorSeleccionado) {
   select.innerHTML = '<option value="">-- Seleccione UM --</option>';
-  agregarUnidades(select, objGlobalFamilias.unidades || [], valorSeleccionado);
+  agregarOpcionesUnidades(select, datosUnidades.unidades || [], valorSeleccionado);
 }
 
-function todoListoParaAlta() {
-  validarRenglonUnicoAlta();
+function validarFormularioAlta() {
+  validarDuplicadoEnFactura();
   document.getElementById("btEnvioFormAlta").disabled = !document.getElementById("formArticulosAlta").checkValidity();
 }
 
-function todoListoParaModi() {
+function validarFormularioModificacion() {
   document.getElementById("btEnvioFormModi").disabled = !document.getElementById("formArticulosModi").checkValidity();
 }
 
 function cargarDatos(silencioso) {
-  var numeroPeticion = ++reqRenglonesActual;
+  var numeroPeticion = ++ultimaPeticionListado;
   var datos = new URLSearchParams();
   var filtros = ["f_nroFactura", "f_codArticulo", "f_unidadMedida", "f_descripcion", "f_fechaFactura"];
   var hayFiltros = false;
@@ -217,25 +217,25 @@ function cargarDatos(silencioso) {
     if (valor !== "") hayFiltros = true;
   });
   if (!silencioso) alert("Lo que sale del navegador en el body:\n" + datos.toString());
-  objTbDatos.innerHTML = '<tr><td colspan="11">Esperando respuesta…</td></tr>';
-  enviarAjax("salidaJsonRenglones.php", datos, function(texto) {
+  cuerpoTabla.innerHTML = '<tr><td colspan="11">Esperando respuesta…</td></tr>';
+  enviarPeticionAjax("salidaJsonRenglones.php", datos, function(texto) {
     // Una búsqueda anterior puede responder después de la más reciente.
-    if (numeroPeticion !== reqRenglonesActual) return;
+    if (numeroPeticion !== ultimaPeticionListado) return;
     if (!silencioso) alert(texto);
     var respuesta = JSON.parse(texto);
     var filas = respuesta.renglones || [];
-    if (!hayFiltros) guardarRenglonesExistentes(filas);
-    cargarTabla(filas);
+    if (!hayFiltros) guardarClavesExistentes(filas);
+    dibujarTabla(filas);
     document.getElementById("pie").textContent = "Nro de registros: " + (respuesta.cantidad || 0);
   }, function(error) {
     if (!silencioso) alert("Error: " + error);
   });
 }
 
-function cargarTabla(filas) {
-  objTbDatos.innerHTML = "";
+function dibujarTabla(filas) {
+  cuerpoTabla.innerHTML = "";
   if (!filas.length) {
-    objTbDatos.innerHTML = '<tr><td colspan="11">Sin resultados.</td></tr>';
+    cuerpoTabla.innerHTML = '<tr><td colspan="11">Sin resultados.</td></tr>';
     return;
   }
   var campos = ["nroFactura", "codArticulo", "unidadMedida", "descripcion", "fechaFactura", "cantidad", "precioUnitario", "importeRenglon"];
@@ -249,83 +249,83 @@ function cargarTabla(filas) {
     var celdaPdf = document.createElement("td");
     celdaPdf.setAttribute("campo-dato", "articulos_btPdf");
     celdaPdf.innerHTML = '<button type="button" class="btCelda btCeldaPdf">PDF</button>';
-    celdaPdf.onclick = function() { verPdf(renglon.nroFactura, renglon.codArticulo); };
+    celdaPdf.onclick = function() { mostrarPdf(renglon.nroFactura, renglon.codArticulo); };
     fila.appendChild(celdaPdf);
 
-    var celdaModi = document.createElement("td");
-    celdaModi.setAttribute("campo-dato", "articulos_btModi");
-    celdaModi.innerHTML = '<button type="button" class="btCelda btCeldaModi">Modificar</button>';
-    celdaModi.onclick = function() {
-      abrirModal("ventanaModalFormularioModi");
-      CompletaFichaArticulo(renglon);
+    var celdaModificar = document.createElement("td");
+    celdaModificar.setAttribute("campo-dato", "articulos_btModi");
+    celdaModificar.innerHTML = '<button type="button" class="btCelda btCeldaModi">Modificar</button>';
+    celdaModificar.onclick = function() {
+      abrirVentana("ventanaModalFormularioModi");
+      completarFormularioModificacion(renglon);
     };
-    fila.appendChild(celdaModi);
+    fila.appendChild(celdaModificar);
 
-    var celdaBaja = document.createElement("td");
-    celdaBaja.setAttribute("campo-dato", "articulos_btBaja");
-    celdaBaja.innerHTML = '<button type="button" class="btCelda btCeldaBaja">Borrar</button>';
-    celdaBaja.onclick = function() { baja(renglon.nroFactura, renglon.codArticulo); };
-    fila.appendChild(celdaBaja);
-    objTbDatos.appendChild(fila);
+    var celdaBorrar = document.createElement("td");
+    celdaBorrar.setAttribute("campo-dato", "articulos_btBaja");
+    celdaBorrar.innerHTML = '<button type="button" class="btCelda btCeldaBaja">Borrar</button>';
+    celdaBorrar.onclick = function() { eliminarRenglon(renglon.nroFactura, renglon.codArticulo); };
+    fila.appendChild(celdaBorrar);
+    cuerpoTabla.appendChild(fila);
   });
 }
 
-function CompletaFichaArticulo(articulo) {
+function completarFormularioModificacion(articulo) {
   document.getElementById("formArticulosEntNroModi").value = articulo.nroFactura;
   document.getElementById("formArticulosEntFechaModi").value = (articulo.fechaFactura || "").substring(0, 10);
   document.getElementById("formArticulosEntCodArtModi").value = articulo.codArticulo;
   document.getElementById("formArticulosEntDescripcionModi").value = articulo.descripcion;
   document.getElementById("formArticulosEntCantidadModi").value = articulo.cantidad;
   document.getElementById("formArticulosEntPrecioModi").value = articulo.precioUnitario;
-  poblarSelectUnidades(document.getElementById("formArticulosEntUmModi"), articulo.unidadMedida);
-  todoListoParaModi();
+  llenarSelectorUnidades(document.getElementById("formArticulosEntUmModi"), articulo.unidadMedida);
+  validarFormularioModificacion();
 }
 
-function alta() {
+function guardarAlta() {
   var datos = new FormData(document.getElementById("formArticulosAlta"));
-  enviarAjax("alta.php", datos, function(texto) {
+  enviarPeticionAjax("alta.php", datos, function(texto) {
     alert(texto);
-    mostrarModalRespuesta(texto);
-    cerrarModalAlta();
-    sincronizarRenglonesExistentes(function() { cargarDatos(true); });
+    mostrarRespuestaServidor(texto);
+    cerrarFormularioAlta();
+    actualizarClavesExistentes(function() { cargarDatos(true); });
   }, function(error) {
     alert("Error en alta: " + error);
   });
 }
 
-function modi() {
+function guardarModificacion() {
   var datos = new FormData(document.getElementById("formArticulosModi"));
-  enviarAjax("modi.php", datos, function(texto) {
+  enviarPeticionAjax("modi.php", datos, function(texto) {
     alert(texto);
-    mostrarModalRespuesta(texto);
-    cerrarModalModi();
+    mostrarRespuestaServidor(texto);
+    cerrarFormularioModificacion();
     cargarDatos(true);
   }, function(error) {
     alert("Error en modi: " + error);
   });
 }
 
-function baja(nro, cod) {
-  if (!confirm("¿Confirma la eliminación del renglón Factura " + nro + " / Artículo " + cod + "?")) return;
+function eliminarRenglon(numeroFactura, codigoArticulo) {
+  if (!confirm("¿Confirma la eliminación del renglón Factura " + numeroFactura + " / Artículo " + codigoArticulo + "?")) return;
   var datos = new FormData();
-  datos.append("nroFactura", nro);
-  datos.append("codArticulo", cod);
-  enviarAjax("baja.php", datos, function(texto) {
+  datos.append("nroFactura", numeroFactura);
+  datos.append("codArticulo", codigoArticulo);
+  enviarPeticionAjax("baja.php", datos, function(texto) {
     alert(texto);
-    mostrarModalRespuesta(texto);
-    sincronizarRenglonesExistentes(function() { cargarDatos(true); });
+    mostrarRespuestaServidor(texto);
+    actualizarClavesExistentes(function() { cargarDatos(true); });
   }, function(error) {
     alert("Error en baja: " + error);
   });
 }
 
-function verPdf(nro, cod) {
-  var url = "traeBinario.php?nroFactura=" + encodeURIComponent(nro) + "&codArticulo=" + encodeURIComponent(cod);
-  enviarAjax(url, null, function(texto) {
+function mostrarPdf(numeroFactura, codigoArticulo) {
+  var url = "traeBinario.php?nroFactura=" + encodeURIComponent(numeroFactura) + "&codArticulo=" + encodeURIComponent(codigoArticulo);
+  enviarPeticionAjax(url, null, function(texto) {
     var respuesta = JSON.parse(texto);
     if (respuesta && respuesta.documentoPdf) {
       document.getElementById("iframePdf").src = "data:application/pdf;base64," + respuesta.documentoPdf;
-      abrirModal("ventanaModalPdf");
+      abrirVentana("ventanaModalPdf");
     } else {
       alert("No hay documento PDF asociado a este renglón.");
     }
@@ -334,30 +334,30 @@ function verPdf(nro, cod) {
   });
 }
 
-function abrirModal(id) {
+function abrirVentana(id) {
   document.getElementById("contenedorTablaArticulos").classList.add("contenedorPasivo");
   var modal = document.getElementById(id);
   modal.style.visibility = "visible";
   modal.classList.add("activo");
 }
 
-function cerrarModal(id) {
+function cerrarVentana(id) {
   var modal = document.getElementById(id);
   modal.style.visibility = "hidden";
   modal.classList.remove("activo");
   document.getElementById("contenedorTablaArticulos").classList.remove("contenedorPasivo");
 }
 
-function mostrarModalRespuesta(texto) {
-  abrirModal("ventanaModalRespuesta");
+function mostrarRespuestaServidor(texto) {
+  abrirVentana("ventanaModalRespuesta");
   document.getElementById("encabezadoModalRespuesta").textContent = "Respuesta del server: ";
   document.getElementById("contenidoModalRespuesta").innerHTML = texto;
 }
 
-function cerrarModalAlta() { cerrarModal("ventanaModalFormularioAlta"); }
-function cerrarModalModi() { cerrarModal("ventanaModalFormularioModi"); }
-function cerrarModalRespuesta() { cerrarModal("ventanaModalRespuesta"); }
-function cerrarModalPdf() {
-  cerrarModal("ventanaModalPdf");
+function cerrarFormularioAlta() { cerrarVentana("ventanaModalFormularioAlta"); }
+function cerrarFormularioModificacion() { cerrarVentana("ventanaModalFormularioModi"); }
+function cerrarRespuestaServidor() { cerrarVentana("ventanaModalRespuesta"); }
+function cerrarVistaPreviaPdf() {
+  cerrarVentana("ventanaModalPdf");
   document.getElementById("iframePdf").src = "";
 }
