@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>appModulo1 — Renglones de Factura (Protegido por Sesión)</title>
   <link rel="stylesheet" href="estilo.css?v=20261103-2">
-  <script src="jquery.js"></script>
 </head>
 <body>
   <div class="nav-volver-top">
@@ -135,6 +134,6 @@
     </div>
   </div>
 
-  <script src="abm.js"></script>
+  <script src="abm.js?v=20261106-ajax"></script>
 </body>
 </html>

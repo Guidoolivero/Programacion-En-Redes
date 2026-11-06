@@ -1,461 +1,371 @@
-    // Variable global de unidades (Págs. 3 y 4 del apunte)
-    var objGlobalFamilias = { unidades: [] };
+var objGlobalFamilias = { unidades: [] };
+var renglonesExistentes = [];
+var timerFiltro = null;
+var reqRenglonesActual = 0;
+var objTbDatos;
+var objCodArtAlta;
 
-    // Conjunto de claves compuestas (NRO_FACTURA||COD_ARTICULO) para permitir repetir
-    // el mismo artículo en distintas facturas sin duplicar el mismo renglón en la misma factura
-    var renglonesExistentes = new Set();
+document.addEventListener("DOMContentLoaded", function() {
+  objTbDatos = document.getElementById("tbDatos");
+  objCodArtAlta = document.getElementById("formArticulosEntCodArtAlta");
+  document.getElementById("orden").value = "nroFactura";
+  document.getElementById("btEnvioFormAlta").disabled = true;
+  document.getElementById("btEnvioFormModi").disabled = true;
+  cargarUnidades();
+  sincronizarRenglonesExistentes();
 
-    // Control de debounce y concurrencia para filtros en tiempo real
-    var timerFiltro = null;
-    var reqRenglonesActual = 0;
-
-    // Declaraciones de objetos del DOM al arranque (Pág. 5 del apunte)
-    var objTbDatos;
-    var objCodArtAlta;
-
-    $(document).ready(function() {
-      // Código asociado al botón de abandono de sesión (Pág. 2 de "Como llevar una app al entorno de sesión")
-      $("#btCierraSesion").click(function() {
-        location.href = "../destruirsesion.php";
-      });
-
-      objTbDatos = document.getElementById("tbDatos");
-      objCodArtAlta = document.getElementById("formArticulosEntCodArtAlta");
-
-      $("#orden").val("nroFactura");
-      $("#contenedorTablaArticulos").addClass("contenedorActivo");
-
-      $("#ventanaModalFormularioAlta").css("visibility", "hidden");
-      $("#ventanaModalFormularioModi").css("visibility", "hidden");
-      $("#ventanaModalRespuesta").css("visibility", "hidden");
-      $("#ventanaModalPdf").css("visibility", "hidden");
-
-      $("#btEnvioFormModi").attr("disabled", true);
-      $("#btEnvioFormAlta").attr("disabled", true);
-
-      // Carga inicial de unidades (Págs. 3 y 4) y precarga silenciosa de renglones existentes
-      cargarUnidades();
-      sincronizarRenglonesExistentes();
-
-      // Eventos de encabezados para ordenar automáticamente al hacer click
-      document.querySelectorAll('th[data-campo]').forEach(th => {
-        th.addEventListener('click', () => {
-          $("#orden").val(th.dataset.campo);
-          cargarDatos(true);
-        });
-      });
-
-      // Botón Cargar datos (muestra las alertas didácticas del apunte)
-      $("#btnCargar").click(function() {
-        cargarDatos(false);
-      });
-
-      $("#btnVaciar").click(function() {
-        $("#tbDatos").html('<tr><td colspan="11">Sin datos.</td></tr>');
-        $("#pie").text('Nro de registros: 0');
-      });
-
-      // Limpiar filtros y recargar tabla automáticamente
-      $("#btnLimpiar").click(function() {
-        ['f_nroFactura','f_codArticulo','f_descripcion','f_fechaFactura'].forEach(id => document.getElementById(id).value = '');
-        $("#f_unidadMedida").val('');
-        cargarDatos(true);
-      });
-
-      // Eventos de búsqueda/filtrado en vivo sobre los 5 campos de filtro
-      $("#f_nroFactura, #f_codArticulo, #f_descripcion").on("input keyup", function() {
-        clearTimeout(timerFiltro);
-        timerFiltro = setTimeout(function() {
-          cargarDatos(true);
-        }, 300);
-      });
-
-      $("#f_nroFactura, #f_codArticulo, #f_descripcion").on("keydown", function(e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          clearTimeout(timerFiltro);
-          cargarDatos(true);
-        }
-      });
-
-      $("#f_unidadMedida, #f_fechaFactura").on("change input", function() {
-        clearTimeout(timerFiltro);
-        cargarDatos(true);
-      });
-
-      // Botón Alta abre modal
-      $("#btnAlta").click(function() {
-        $("#contenedorTablaArticulos").addClass("contenedorPasivo");
-        document.getElementById("formArticulosAlta").reset();
-        objCodArtAlta.setCustomValidity("");
-        $("#msgErrorCodArtAlta").hide().text("");
-        $(objCodArtAlta).css("border-color", "");
-        sincronizarRenglonesExistentes();
-        poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
-        // Asignar por defecto la fecha de hoy en formato YYYY-MM-DD (modificable por el usuario)
-        const hoy = new Date().toISOString().substring(0, 10);
-        $("#formArticulosEntFechaAlta").val(hoy);
-        $("#btEnvioFormAlta").attr("disabled", true);
-        $("#ventanaModalFormularioAlta").css("visibility", "visible").addClass("activo");
-      });
-
-      // Handlers para validar entradas con keyup, change e input (Págs. 1, 6, 7)
-      $("#formArticulosAlta input, #formArticulosAlta select").on("keyup change input blur", function() {
-        todoListoParaAlta();
-      });
-      $("#formArticulosModi input, #formArticulosModi select").on("keyup change input", function() {
-        todoListoParaModi();
-      });
-
-      // Handlers de envío de formularios (Págs. 10 y 11)
-      $("#formArticulosAlta").submit(function(e) {
-        e.preventDefault();
-        validarRenglonUnicoAlta();
-        if (!document.getElementById("formArticulosAlta").checkValidity()) {
-          todoListoParaAlta();
-          return;
-        }
-        alta();
-      });
-      $("#formArticulosModi").submit(function(e) {
-        e.preventDefault();
-        modi();
-      });
+  document.getElementById("btCierraSesion").onclick = function() {
+    location.href = "../destruirsesion.php";
+  };
+  document.getElementById("btnCargar").onclick = function() {
+    cargarDatos(false);
+  };
+  document.getElementById("btnVaciar").onclick = function() {
+    objTbDatos.innerHTML = '<tr><td colspan="11">Sin datos.</td></tr>';
+    document.getElementById("pie").textContent = "Nro de registros: 0";
+  };
+  document.getElementById("btnLimpiar").onclick = function() {
+    document.querySelectorAll(".filtros input, .filtros select").forEach(function(campo) {
+      campo.value = "";
     });
+    cargarDatos(true);
+  };
+  document.querySelectorAll("th[data-campo]").forEach(function(titulo) {
+    titulo.onclick = function() {
+      document.getElementById("orden").value = titulo.dataset.campo;
+      cargarDatos(true);
+    };
+  });
 
-    // Sincroniza en segundo plano los pares (nroFactura||codArticulo) existentes
-    async function sincronizarRenglonesExistentes() {
-      try {
-        const params = new URLSearchParams();
-        params.append('orden', 'nroFactura');
-        const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
-        const data = await resp.json();
-        renglonesExistentes.clear();
-        (data.renglones || []).forEach(function(r) {
-          if (r.nroFactura && r.codArticulo) {
-            const clave = String(r.nroFactura).trim().toUpperCase() + "||" + String(r.codArticulo).trim().toUpperCase();
-            renglonesExistentes.add(clave);
-          }
-        });
-        if ($("#ventanaModalFormularioAlta").hasClass("activo")) {
-          todoListoParaAlta();
-        }
-      } catch (e) {
-        // Silencioso en segundo plano
-      }
-    }
-
-    // Permite repetir codArticulo en distintas facturas, bloqueando sólo si ya existe (nroFactura + codArticulo)
-    function validarRenglonUnicoAlta() {
-      if (!objCodArtAlta) return;
-      const nroRaw = ($("#formArticulosEntNroAlta").val() || "").trim();
-      const codRaw = (objCodArtAlta.value || "").trim();
-      const clave = nroRaw.toUpperCase() + "||" + codRaw.toUpperCase();
-
-      if (nroRaw !== "" && codRaw !== "" && renglonesExistentes.has(clave)) {
-        objCodArtAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
-        $("#msgErrorCodArtAlta").text('⚠️ La factura "' + nroRaw + '" ya contiene el artículo "' + codRaw + '" (sí podés cargarlo en otra factura).').show();
-        $(objCodArtAlta).css("border-color", "#e53e3e");
-      } else {
-        objCodArtAlta.setCustomValidity("");
-        $("#msgErrorCodArtAlta").hide().text("");
-        $(objCodArtAlta).css("border-color", "");
-      }
-    }
-
-    // Poblamiento de unidades (Págs. 3 y 4)
-    async function cargarUnidades() {
-      try {
-        const resp = await fetch('salidaJsonUnidades.php');
-        const texto = await resp.text();
-        alert(texto);
-        var objFamilias = JSON.parse(texto);
-        llenaFiltroFamilias(objFamilias);
-        objGlobalFamilias = objFamilias;
-      } catch (e) {
-        alert('Error unidades: ' + e);
-      }
-    }
-
-    function llenaFiltroFamilias(objFamilias) {
-      const select = document.getElementById('f_unidadMedida');
-      $(select).find('option:not(:first)').remove();
-      (objFamilias.unidades || []).forEach(function(argValor, argIndice) {
-        var objOption = document.createElement("option");
-        objOption.setAttribute("class", "elementoOptionSelect");
-        const val = argValor.cod_um || argValor.codigo || argValor.codUm || argValor.id || argValor.descripcion || '';
-        const nom = argValor.descripcion || argValor.descripcionUm || argValor.nombre || val;
-        objOption.setAttribute("value", val);
-        objOption.innerHTML = nom;
-        select.appendChild(objOption);
-      });
-    }
-
-    function poblarSelectUnidades(selectElement, valorSeleccionado = '') {
-      $(selectElement).empty();
-      var optDefault = document.createElement("option");
-      optDefault.value = "";
-      optDefault.textContent = "-- Seleccione UM --";
-      selectElement.appendChild(optDefault);
-
-      (objGlobalFamilias.unidades || []).forEach(function(argValor, argIndice) {
-        var objOption = document.createElement("option");
-        objOption.setAttribute("class", "elementoOptionSelect");
-        const val = argValor.cod_um || argValor.codigo || argValor.codUm || argValor.id || argValor.descripcion || '';
-        const nom = argValor.descripcion || argValor.descripcionUm || argValor.nombre || val;
-        objOption.setAttribute("value", val);
-        objOption.innerHTML = nom;
-        if (val == valorSeleccionado) {
-          objOption.setAttribute("selected", "selected");
-        }
-        selectElement.appendChild(objOption);
-      });
-    }
-
-    // Funciones de validación con checkValidity (Págs. 6 y 7) + validación de clave compuesta
-    function todoListoParaAlta() {
-      validarRenglonUnicoAlta();
-      if (document.getElementById("formArticulosAlta").checkValidity()) {
-        $("#btEnvioFormAlta").attr("disabled", false);
-      } else {
-        $("#btEnvioFormAlta").attr("disabled", true);
-      }
-    }
-
-    function todoListoParaModi() {
-      if (document.getElementById("formArticulosModi").checkValidity()) {
-        $("#btEnvioFormModi").attr("disabled", false);
-      } else {
-        $("#btEnvioFormModi").attr("disabled", true);
-      }
-    }
-
-    // Consulta y barrido de filas construyendo celdas y eventos dinámicos (Págs. 8 y 9)
-    async function cargarDatos(silencioso = false) {
-      const miReq = ++reqRenglonesActual;
-
-      const fNro   = $("#f_nroFactura").val() || '';
-      const fCod   = $("#f_codArticulo").val() || '';
-      const fUm    = $("#f_unidadMedida").val() || '';
-      const fDesc  = $("#f_descripcion").val() || '';
-      const fFecha = $("#f_fechaFactura").val() || '';
-
-      const params = new URLSearchParams();
-      params.append('orden', $("#orden").val());
-      params.append('f_nroFactura', fNro);
-      params.append('f_codArticulo', fCod);
-      params.append('f_unidadMedida', fUm);
-      params.append('f_descripcion', fDesc);
-      params.append('f_fechaFactura', fFecha);
-
-      if (!silencioso) {
-        alert('Lo que sale del navegador en el body:\n' + params.toString());
-      }
-      $("#tbDatos").html('<tr><td colspan="11">Esperando respuesta…</td></tr>');
-
-      try {
-        const resp = await fetch('salidaJsonRenglones.php', { method: 'POST', body: params });
-        const texto = await resp.text();
-        if (miReq !== reqRenglonesActual) return; // Ignorar respuesta vieja si el usuario siguió escribiendo
-
-        if (!silencioso) {
-          alert(texto);
-        }
-        const data = JSON.parse(texto);
-        const filas = data.renglones || [];
-
-        // Si no hay filtros activos, actualizamos el set completo de renglones existentes
-        if (!fNro && !fCod && !fUm && !fDesc && !fFecha) {
-          renglonesExistentes.clear();
-          filas.forEach(function(r) {
-            if (r.nroFactura && r.codArticulo) {
-              const clave = String(r.nroFactura).trim().toUpperCase() + "||" + String(r.codArticulo).trim().toUpperCase();
-              renglonesExistentes.add(clave);
-            }
-          });
-        }
-
-        cargarTabla(filas);
-        $("#pie").text('Nro de registros: ' + (data.cantidad || 0));
-      } catch (e) {
-        if (!silencioso) {
-          alert('Error: ' + e);
-        }
-      }
-    }
-
-    function cargarTabla(filas) {
-      const tbody = document.getElementById('tbDatos');
-      tbody.innerHTML = '';
-      if (!filas.length) {
-        tbody.innerHTML = '<tr><td colspan="11">Sin resultados.</td></tr>';
-        return;
-      }
-
-      filas.forEach(function(argValor) {
-        var objTr = document.createElement("tr");
-
-        // Datos de columnas comunes
-        const campos = ['nroFactura', 'codArticulo', 'unidadMedida', 'descripcion', 'fechaFactura', 'cantidad', 'precioUnitario', 'importeRenglon'];
-        campos.forEach(c => {
-          var td = document.createElement("td");
-          td.textContent = argValor[c] ?? '';
-          objTr.appendChild(td);
-        });
-
-        // Columna PDF (Págs. 2 y 23)
-        var tdPdf = document.createElement("td");
-        tdPdf.setAttribute("campo-dato", "articulos_btPdf");
-        tdPdf.innerHTML = "<button type='button' class='btCelda btCeldaPdf'>PDF</button>";
-        tdPdf.onclick = function() {
-          verPdf(argValor.nroFactura, argValor.codArticulo);
-        };
-        objTr.appendChild(tdPdf);
-
-        // Columna Modificar (Pág. 8)
-        var tdModi = document.createElement("td");
-        tdModi.setAttribute("campo-dato", "articulos_btModi");
-        tdModi.innerHTML = "<button type='button' class='btCelda btCeldaModi'>Modificar</button>";
-        tdModi.onclick = function() {
-          $("#contenedorTablaArticulos").addClass("contenedorPasivo");
-          $("#ventanaModalFormularioModi").css("visibility", "visible").addClass("activo");
-          CompletaFichaArticulo(argValor);
-        };
-        objTr.appendChild(tdModi);
-
-        // Columna Baja (Pág. 8)
-        var tdBaja = document.createElement("td");
-        tdBaja.setAttribute("campo-dato", "articulos_btBaja");
-        tdBaja.innerHTML = "<button type='button' class='btCelda btCeldaBaja'>Borrar</button>";
-        tdBaja.onclick = function() {
-          baja(argValor.nroFactura, argValor.codArticulo);
-        };
-        objTr.appendChild(tdBaja);
-
-        tbody.appendChild(objTr);
-      });
-    }
-
-    // Completa el formulario de Modi (Pág. 9)
-    function CompletaFichaArticulo(argArticulo) {
-      $("#formArticulosEntNroModi").val(argArticulo.nroFactura);
-      $("#formArticulosEntFechaModi").val((argArticulo.fechaFactura || '').substring(0, 10));
-      $("#formArticulosEntCodArtModi").val(argArticulo.codArticulo);
-      $("#formArticulosEntDescripcionModi").val(argArticulo.descripcion);
-      $("#formArticulosEntCantidadModi").val(argArticulo.cantidad);
-      $("#formArticulosEntPrecioModi").val(argArticulo.precioUnitario);
-
-      const selectUm = document.getElementById("formArticulosEntUmModi");
-      poblarSelectUnidades(selectUm, argArticulo.unidadMedida);
-
-      todoListoParaModi();
-    }
-
-    // Petición AJAX Alta (Págs. 10 y 11)
-    async function alta() {
-      var objFormulario = document.getElementById("formArticulosAlta");
-      var objDatosFormulario = new FormData(objFormulario);
-      const options = {
-        method: 'POST',
-        headers: {},
-        body: objDatosFormulario
-      };
-
-      try {
-        const resp = await fetch('alta.php', options);
-        const datos = await resp.text();
-        alert(datos);
-        mostrarModalRespuesta(datos);
-        cerrarModalAlta();
-        await sincronizarRenglonesExistentes();
+  document.querySelectorAll("#f_nroFactura, #f_codArticulo, #f_descripcion").forEach(function(campo) {
+    campo.oninput = filtrarConDemora;
+    campo.onkeyup = filtrarConDemora;
+    campo.onkeydown = function(evento) {
+      if (evento.key === "Enter") {
+        evento.preventDefault();
+        clearTimeout(timerFiltro);
         cargarDatos(true);
-      } catch (err) {
-        alert('Error en alta: ' + err);
       }
-    }
+    };
+  });
+  document.querySelectorAll("#f_unidadMedida, #f_fechaFactura").forEach(function(campo) {
+    campo.onchange = function() {
+      clearTimeout(timerFiltro);
+      cargarDatos(true);
+    };
+    campo.oninput = campo.onchange;
+  });
 
-    // Petición AJAX Modi (Págs. 10 y 11)
-    async function modi() {
-      var objFormulario = document.getElementById("formArticulosModi");
-      var objDatosFormulario = new FormData(objFormulario);
-      const options = {
-        method: 'POST',
-        headers: {},
-        body: objDatosFormulario
-      };
+  document.getElementById("btnAlta").onclick = function() {
+    document.getElementById("formArticulosAlta").reset();
+    objCodArtAlta.setCustomValidity("");
+    document.getElementById("msgErrorCodArtAlta").textContent = "";
+    document.getElementById("msgErrorCodArtAlta").style.display = "none";
+    objCodArtAlta.style.borderColor = "";
+    sincronizarRenglonesExistentes();
+    poblarSelectUnidades(document.getElementById("formArticulosEntUmAlta"));
+    document.getElementById("formArticulosEntFechaAlta").value = new Date().toISOString().substring(0, 10);
+    document.getElementById("btEnvioFormAlta").disabled = true;
+    abrirModal("ventanaModalFormularioAlta");
+  };
+  document.querySelectorAll("#formArticulosAlta input, #formArticulosAlta select").forEach(function(campo) {
+    campo.onkeyup = todoListoParaAlta;
+    campo.onchange = todoListoParaAlta;
+    campo.oninput = todoListoParaAlta;
+    campo.onblur = todoListoParaAlta;
+  });
+  document.querySelectorAll("#formArticulosModi input, #formArticulosModi select").forEach(function(campo) {
+    campo.onkeyup = todoListoParaModi;
+    campo.onchange = todoListoParaModi;
+    campo.oninput = todoListoParaModi;
+  });
+  document.getElementById("formArticulosAlta").onsubmit = function(evento) {
+    evento.preventDefault();
+    validarRenglonUnicoAlta();
+    if (!this.checkValidity()) {
+      todoListoParaAlta();
+      return;
+    }
+    alta();
+  };
+  document.getElementById("formArticulosModi").onsubmit = function(evento) {
+    evento.preventDefault();
+    modi();
+  };
+});
 
-      try {
-        const resp = await fetch('modi.php', options);
-        const datos = await resp.text();
-        alert(datos);
-        mostrarModalRespuesta(datos);
-        cerrarModalModi();
-        cargarDatos(true);
-      } catch (err) {
-        alert('Error en modi: ' + err);
-      }
-    }
+function filtrarConDemora() {
+  clearTimeout(timerFiltro);
+  timerFiltro = setTimeout(function() {
+    cargarDatos(true);
+  }, 300);
+}
 
-    // Petición AJAX Baja (Pág. 10)
-    async function baja(nro, cod) {
-      if (!confirm('¿Confirma la eliminación del renglón Factura ' + nro + ' / Artículo ' + cod + '?')) return;
-      var objDatosFormulario = new FormData();
-      objDatosFormulario.append('nroFactura', nro);
-      objDatosFormulario.append('codArticulo', cod);
+// AJAX común a todas las consultas: al terminar, llama a la función recibida.
+function enviarAjax(url, datos, alResponder, alError) {
+  var peticion = new XMLHttpRequest();
+  var metodo = "POST";
+  if (datos === null) metodo = "GET";
+  peticion.open(metodo, url, true);
+  peticion.onload = function() {
+    try {
+      alResponder(peticion.responseText);
+    } catch (error) {
+      if (alError) alError(error);
+    }
+  };
+  peticion.onerror = function() {
+    if (alError) alError(new Error("No se pudo conectar con el servidor."));
+  };
+  if (datos instanceof URLSearchParams) {
+    peticion.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+    datos = datos.toString();
+  }
+  // FormData incluye el PDF y deja que el navegador prepare su Content-Type.
+  peticion.send(datos);
+}
 
-      try {
-        const resp = await fetch('baja.php', { method: 'POST', body: objDatosFormulario });
-        const datos = await resp.text();
-        alert(datos);
-        mostrarModalRespuesta(datos);
-        await sincronizarRenglonesExistentes();
-        cargarDatos(true);
-      } catch (err) {
-        alert('Error en baja: ' + err);
-      }
+function guardarRenglonesExistentes(filas) {
+  renglonesExistentes = [];
+  filas.forEach(function(renglon) {
+    if (renglon.nroFactura && renglon.codArticulo) {
+      var clave = String(renglon.nroFactura).trim().toUpperCase() + "||" + String(renglon.codArticulo).trim().toUpperCase();
+      renglonesExistentes.push(clave);
     }
+  });
+}
 
-    // Visualizar PDF con traeBinario.php (Pág. 23)
-    async function verPdf(nro, cod) {
-      try {
-        const resp = await fetch(`traeBinario.php?nroFactura=${encodeURIComponent(nro)}&codArticulo=${encodeURIComponent(cod)}`);
-        const json = await resp.json();
-        if (json && json.documentoPdf) {
-          $("#contenedorTablaArticulos").addClass("contenedorPasivo");
-          document.getElementById('iframePdf').src = "data:application/pdf;base64," + json.documentoPdf;
-          $("#ventanaModalPdf").css("visibility", "visible").addClass("activo");
-        } else {
-          alert('No hay documento PDF asociado a este renglón.');
-        }
-      } catch (e) {
-        alert('Error al obtener PDF: ' + e);
-      }
+function sincronizarRenglonesExistentes(alTerminar) {
+  var datos = new URLSearchParams();
+  datos.append("orden", "nroFactura");
+  enviarAjax("salidaJsonRenglones.php", datos, function(texto) {
+    var respuesta = JSON.parse(texto);
+    guardarRenglonesExistentes(respuesta.renglones || []);
+    if (document.getElementById("ventanaModalFormularioAlta").classList.contains("activo")) {
+      todoListoParaAlta();
     }
+    if (alTerminar) alTerminar();
+  }, function() {
+    // La sincronización es silenciosa, pero la recarga de la tabla debe continuar.
+    if (alTerminar) alTerminar();
+  });
+}
 
-    // Modal de respuesta del servidor (Págs. 10 y 11)
-    function mostrarModalRespuesta(datos) {
-      $("#contenedorTablaArticulos").addClass("contenedorPasivo");
-      $("#ventanaModalRespuesta").css("visibility", "visible").addClass("activo");
-      $("#contenidoModalRespuesta").empty();
-      $("#encabezadoModalRespuesta").html("Respuesta del server: ");
-      $("#contenidoModalRespuesta").html(datos);
-    }
+function validarRenglonUnicoAlta() {
+  if (!objCodArtAlta) return;
+  var nro = document.getElementById("formArticulosEntNroAlta").value.trim();
+  var cod = objCodArtAlta.value.trim();
+  var clave = nro.toUpperCase() + "||" + cod.toUpperCase();
+  var mensaje = document.getElementById("msgErrorCodArtAlta");
+  if (nro !== "" && cod !== "" && renglonesExistentes.includes(clave)) {
+    objCodArtAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
+    mensaje.textContent = '⚠️ La factura "' + nro + '" ya contiene el artículo "' + cod + '" (sí podés cargarlo en otra factura).';
+    mensaje.style.display = "";
+    objCodArtAlta.style.borderColor = "#e53e3e";
+  } else {
+    objCodArtAlta.setCustomValidity("");
+    mensaje.textContent = "";
+    mensaje.style.display = "none";
+    objCodArtAlta.style.borderColor = "";
+  }
+}
 
-    // Funciones de cierre de modales y restauración de opacidad
-    function cerrarModalAlta() {
-      $("#ventanaModalFormularioAlta").css("visibility", "hidden").removeClass("activo");
-      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
+function cargarUnidades() {
+  enviarAjax("salidaJsonUnidades.php", null, function(texto) {
+    alert(texto);
+    objGlobalFamilias = JSON.parse(texto);
+    llenaFiltroFamilias(objGlobalFamilias);
+  }, function(error) {
+    alert("Error unidades: " + error);
+  });
+}
+
+function agregarUnidades(select, unidades, valorSeleccionado) {
+  unidades.forEach(function(unidad) {
+    var valor = unidad.cod_um || unidad.codigo || unidad.codUm || unidad.id || unidad.descripcion || "";
+    var nombre = unidad.descripcion || unidad.descripcionUm || unidad.nombre || valor;
+    var opcion = document.createElement("option");
+    opcion.className = "elementoOptionSelect";
+    opcion.value = valor;
+    opcion.textContent = nombre;
+    if (valor == valorSeleccionado) opcion.selected = true;
+    select.appendChild(opcion);
+  });
+}
+
+function llenaFiltroFamilias(objFamilias) {
+  var select = document.getElementById("f_unidadMedida");
+  while (select.options.length > 1) select.remove(1);
+  agregarUnidades(select, objFamilias.unidades || []);
+}
+
+function poblarSelectUnidades(select, valorSeleccionado) {
+  select.innerHTML = '<option value="">-- Seleccione UM --</option>';
+  agregarUnidades(select, objGlobalFamilias.unidades || [], valorSeleccionado);
+}
+
+function todoListoParaAlta() {
+  validarRenglonUnicoAlta();
+  document.getElementById("btEnvioFormAlta").disabled = !document.getElementById("formArticulosAlta").checkValidity();
+}
+
+function todoListoParaModi() {
+  document.getElementById("btEnvioFormModi").disabled = !document.getElementById("formArticulosModi").checkValidity();
+}
+
+function cargarDatos(silencioso) {
+  var numeroPeticion = ++reqRenglonesActual;
+  var datos = new URLSearchParams();
+  var filtros = ["f_nroFactura", "f_codArticulo", "f_unidadMedida", "f_descripcion", "f_fechaFactura"];
+  var hayFiltros = false;
+  datos.append("orden", document.getElementById("orden").value);
+  filtros.forEach(function(id) {
+    var valor = document.getElementById(id).value;
+    datos.append(id, valor);
+    if (valor !== "") hayFiltros = true;
+  });
+  if (!silencioso) alert("Lo que sale del navegador en el body:\n" + datos.toString());
+  objTbDatos.innerHTML = '<tr><td colspan="11">Esperando respuesta…</td></tr>';
+  enviarAjax("salidaJsonRenglones.php", datos, function(texto) {
+    // Una búsqueda anterior puede responder después de la más reciente.
+    if (numeroPeticion !== reqRenglonesActual) return;
+    if (!silencioso) alert(texto);
+    var respuesta = JSON.parse(texto);
+    var filas = respuesta.renglones || [];
+    if (!hayFiltros) guardarRenglonesExistentes(filas);
+    cargarTabla(filas);
+    document.getElementById("pie").textContent = "Nro de registros: " + (respuesta.cantidad || 0);
+  }, function(error) {
+    if (!silencioso) alert("Error: " + error);
+  });
+}
+
+function cargarTabla(filas) {
+  objTbDatos.innerHTML = "";
+  if (!filas.length) {
+    objTbDatos.innerHTML = '<tr><td colspan="11">Sin resultados.</td></tr>';
+    return;
+  }
+  var campos = ["nroFactura", "codArticulo", "unidadMedida", "descripcion", "fechaFactura", "cantidad", "precioUnitario", "importeRenglon"];
+  filas.forEach(function(renglon) {
+    var fila = document.createElement("tr");
+    campos.forEach(function(campo) {
+      var celda = document.createElement("td");
+      celda.textContent = renglon[campo] == null ? "" : renglon[campo];
+      fila.appendChild(celda);
+    });
+    var celdaPdf = document.createElement("td");
+    celdaPdf.setAttribute("campo-dato", "articulos_btPdf");
+    celdaPdf.innerHTML = '<button type="button" class="btCelda btCeldaPdf">PDF</button>';
+    celdaPdf.onclick = function() { verPdf(renglon.nroFactura, renglon.codArticulo); };
+    fila.appendChild(celdaPdf);
+
+    var celdaModi = document.createElement("td");
+    celdaModi.setAttribute("campo-dato", "articulos_btModi");
+    celdaModi.innerHTML = '<button type="button" class="btCelda btCeldaModi">Modificar</button>';
+    celdaModi.onclick = function() {
+      abrirModal("ventanaModalFormularioModi");
+      CompletaFichaArticulo(renglon);
+    };
+    fila.appendChild(celdaModi);
+
+    var celdaBaja = document.createElement("td");
+    celdaBaja.setAttribute("campo-dato", "articulos_btBaja");
+    celdaBaja.innerHTML = '<button type="button" class="btCelda btCeldaBaja">Borrar</button>';
+    celdaBaja.onclick = function() { baja(renglon.nroFactura, renglon.codArticulo); };
+    fila.appendChild(celdaBaja);
+    objTbDatos.appendChild(fila);
+  });
+}
+
+function CompletaFichaArticulo(articulo) {
+  document.getElementById("formArticulosEntNroModi").value = articulo.nroFactura;
+  document.getElementById("formArticulosEntFechaModi").value = (articulo.fechaFactura || "").substring(0, 10);
+  document.getElementById("formArticulosEntCodArtModi").value = articulo.codArticulo;
+  document.getElementById("formArticulosEntDescripcionModi").value = articulo.descripcion;
+  document.getElementById("formArticulosEntCantidadModi").value = articulo.cantidad;
+  document.getElementById("formArticulosEntPrecioModi").value = articulo.precioUnitario;
+  poblarSelectUnidades(document.getElementById("formArticulosEntUmModi"), articulo.unidadMedida);
+  todoListoParaModi();
+}
+
+function alta() {
+  var datos = new FormData(document.getElementById("formArticulosAlta"));
+  enviarAjax("alta.php", datos, function(texto) {
+    alert(texto);
+    mostrarModalRespuesta(texto);
+    cerrarModalAlta();
+    sincronizarRenglonesExistentes(function() { cargarDatos(true); });
+  }, function(error) {
+    alert("Error en alta: " + error);
+  });
+}
+
+function modi() {
+  var datos = new FormData(document.getElementById("formArticulosModi"));
+  enviarAjax("modi.php", datos, function(texto) {
+    alert(texto);
+    mostrarModalRespuesta(texto);
+    cerrarModalModi();
+    cargarDatos(true);
+  }, function(error) {
+    alert("Error en modi: " + error);
+  });
+}
+
+function baja(nro, cod) {
+  if (!confirm("¿Confirma la eliminación del renglón Factura " + nro + " / Artículo " + cod + "?")) return;
+  var datos = new FormData();
+  datos.append("nroFactura", nro);
+  datos.append("codArticulo", cod);
+  enviarAjax("baja.php", datos, function(texto) {
+    alert(texto);
+    mostrarModalRespuesta(texto);
+    sincronizarRenglonesExistentes(function() { cargarDatos(true); });
+  }, function(error) {
+    alert("Error en baja: " + error);
+  });
+}
+
+function verPdf(nro, cod) {
+  var url = "traeBinario.php?nroFactura=" + encodeURIComponent(nro) + "&codArticulo=" + encodeURIComponent(cod);
+  enviarAjax(url, null, function(texto) {
+    var respuesta = JSON.parse(texto);
+    if (respuesta && respuesta.documentoPdf) {
+      document.getElementById("iframePdf").src = "data:application/pdf;base64," + respuesta.documentoPdf;
+      abrirModal("ventanaModalPdf");
+    } else {
+      alert("No hay documento PDF asociado a este renglón.");
     }
-    function cerrarModalModi() {
-      $("#ventanaModalFormularioModi").css("visibility", "hidden").removeClass("activo");
-      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
-    }
-    function cerrarModalRespuesta() {
-      $("#ventanaModalRespuesta").css("visibility", "hidden").removeClass("activo");
-      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
-    }
-    function cerrarModalPdf() {
-      $("#ventanaModalPdf").css("visibility", "hidden").removeClass("activo");
-      document.getElementById('iframePdf').src = "";
-      $("#contenedorTablaArticulos").removeClass("contenedorPasivo");
-    }
+  }, function(error) {
+    alert("Error al obtener PDF: " + error);
+  });
+}
+
+function abrirModal(id) {
+  document.getElementById("contenedorTablaArticulos").classList.add("contenedorPasivo");
+  var modal = document.getElementById(id);
+  modal.style.visibility = "visible";
+  modal.classList.add("activo");
+}
+
+function cerrarModal(id) {
+  var modal = document.getElementById(id);
+  modal.style.visibility = "hidden";
+  modal.classList.remove("activo");
+  document.getElementById("contenedorTablaArticulos").classList.remove("contenedorPasivo");
+}
+
+function mostrarModalRespuesta(texto) {
+  abrirModal("ventanaModalRespuesta");
+  document.getElementById("encabezadoModalRespuesta").textContent = "Respuesta del server: ";
+  document.getElementById("contenidoModalRespuesta").innerHTML = texto;
+}
+
+function cerrarModalAlta() { cerrarModal("ventanaModalFormularioAlta"); }
+function cerrarModalModi() { cerrarModal("ventanaModalFormularioModi"); }
+function cerrarModalRespuesta() { cerrarModal("ventanaModalRespuesta"); }
+function cerrarModalPdf() {
+  cerrarModal("ventanaModalPdf");
+  document.getElementById("iframePdf").src = "";
+}
