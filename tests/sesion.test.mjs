@@ -12,22 +12,23 @@ const php = new PHP(await loadNodeRuntime('8.2', { emscriptenOptions: { processI
 const raiz = fileURLToPath(new URL('../ejerciciosPHP/12-sesion/', import.meta.url));
 php.mkdir('/ej12');
 php.mkdir('/ej12/appModulo1');
+php.mkdir('/ej12/appModulo1/views');
 
 const rutas = [
     ['index.php', './formularioDeLogin.html'],
     ['destruirsesion.php', './formularioDeLogin.html'],
     ['descargarErrores.php', './formularioDeLogin.html'],
     ['seedUsuario.php', './formularioDeLogin.html'],
-    ['appModulo1/index.php', '../index.php'],
-    ['appModulo1/alta.php', '../index.php'],
-    ['appModulo1/modi.php', '../index.php'],
-    ['appModulo1/baja.php', '../index.php'],
-    ['appModulo1/salidaJsonRenglones.php', '../index.php'],
-    ['appModulo1/salidaJsonUnidades.php', '../index.php'],
-    ['appModulo1/traeBinario.php', '../index.php'],
-    ['appModulo1/destruirsesion.php', '../index.php'],
-    ['appModulo1/descargarErrores.php', '../index.php'],
-    ['appModulo1/datosSesion.php', '../index.php'],
+    ['appModulo1/index.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/alta.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/modi.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/baja.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/salidaJsonRenglones.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/salidaJsonUnidades.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/traeBinario.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/destruirsesion.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/descargarErrores.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/views/datosSesion.php', '/ejerciciosPHP/12-sesion/index.php'],
 ];
 for (const archivo of ['manejoSesion.inc', 'ingresoAlSistema.php', ...rutas.map(([ruta]) => ruta)]) {
     php.writeFile('/ej12/' + archivo, fs.readFileSync(path.join(raiz, archivo)));
@@ -67,7 +68,7 @@ const plantilla = await autenticado('appModulo1/index.php');
 assert.equal(plantilla.httpStatusCode, 200);
 assert(plantilla.text.includes('id="usuarioSesion"'));
 assert(!plantilla.text.includes('<?php'));
-const sesion = await autenticado('appModulo1/datosSesion.php');
+const sesion = await autenticado('appModulo1/views/datosSesion.php');
 assert.deepEqual(sesion.json, { login: 'Guido <prueba>', contador: 7, identificativo: 'sesion-valida' });
 php.writeFile('/ej12/errores.log', '# comentario\nError uno\nError uno\nError dos\n');
 php.writeFile('/ej12/appModulo1/errores.log', 'Error uno\nError dos\n');

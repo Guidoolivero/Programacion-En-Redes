@@ -1,6 +1,6 @@
 <?php
-include __DIR__ . '/../manejoSesion.inc'; // Primero comprueba la sesión.
-require_once __DIR__ . '/models/Database.php'; // Conexión y registro de errores compartidos.
+include __DIR__ . '/../../manejoSesion.inc'; // Primero comprueba la sesión.
+require_once __DIR__ . '/../models/Database.php'; // Conexión y registro de errores compartidos.
 
 $pdo = Database::getConnection();
 $nroFactura = $_POST['nroFactura'] ?? '';

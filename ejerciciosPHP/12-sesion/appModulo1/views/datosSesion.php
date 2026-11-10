@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '/../manejoSesion.inc'; // Protege también los datos de la sesión.
+include __DIR__ . '/../../manejoSesion.inc'; // Protege también los datos de la sesión.
 
 // Vista de sesión: JavaScript escribe estos valores en el template mediante textContent.
 header('Content-Type: application/json; charset=utf-8');

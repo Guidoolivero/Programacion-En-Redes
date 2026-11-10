@@ -16,6 +16,6 @@ if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todaví
 // ========================================================================================
 // Comprueba el dato que indica si este usuario ya se autenticó.
 if (empty($_SESSION['identificativo'])) { // empty también contempla que la variable no exista.
-    header('Location: ../index.php'); // Redirige al navegador a la página indicada.
+    header('Location: /ejerciciosPHP/12-sesion/index.php'); // Ruta desde la raíz del sitio: sirve también desde views/.
     exit(); // Termina este pedido para que no continúe el código de abajo.
 }

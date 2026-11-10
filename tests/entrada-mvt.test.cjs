@@ -16,6 +16,15 @@ test('La carpeta y el HTML pasan por la entrada PHP de sesión', { timeout: 1000
   fs.writeFileSync(path.join(app, 'index.html'), 'PLANTILLA');
   const reglas = path.join(__dirname, '../ejerciciosPHP/12-sesion/appModulo1/.htaccess');
   if (fs.existsSync(reglas)) fs.copyFileSync(reglas, path.join(app, '.htaccess'));
+  const origen = path.dirname(reglas);
+  const htmlEntrada = fs.readFileSync(path.join(origen, 'index.php'), 'utf8');
+  const recursos = [...htmlEntrada.matchAll(/(?:href|src)="(templates\/[^"?]+)/g)].map(m => m[1]);
+  assert.deepEqual(recursos, ['templates/estilo.css', 'templates/abm.js']);
+  fs.mkdirSync(path.join(app, 'templates'));
+  for (const recurso of recursos) {
+    assert(fs.existsSync(path.join(origen, recurso)), recurso + ': el archivo debe existir');
+    fs.writeFileSync(path.join(app, recurso), 'RECURSO ' + recurso);
+  }
   const socket = net.createServer();
   await new Promise(resolve => socket.listen(0, '127.0.0.1', resolve));
   const port = socket.address().port;
@@ -50,6 +59,11 @@ DocumentRoot "${dir}/www"
   }
   assert(respuesta, fs.existsSync(path.join(dir, 'error.log')) ? fs.readFileSync(path.join(dir, 'error.log'), 'utf8') : 'Apache no inició');
   assert.equal(await respuesta.text(), 'ENTRADA_PHP');
+  for (const recurso of recursos) {
+    const archivo = await fetch(`http://127.0.0.1:${port}${ruta}${recurso}`);
+    assert.equal(archivo.status, 200);
+    assert.equal(await archivo.text(), 'RECURSO ' + recurso);
+  }
   const html = await fetch(`http://127.0.0.1:${port}${ruta}index.html`, { redirect: 'manual' });
   assert.equal(html.status, 302);
   assert.equal(new URL(html.headers.get('location')).pathname, ruta + 'index.php');

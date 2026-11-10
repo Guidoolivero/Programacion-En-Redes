@@ -54,6 +54,7 @@ function comprobar($condicion, $mensaje) {
 $origen = __DIR__ . '/../ejerciciosPHP/12-sesion/appModulo1/models';
 $temporal = sys_get_temp_dir() . '/ej12-model-' . uniqid();
 mkdir($temporal . '/appModulo1/models', 0777, true);
+mkdir($temporal . '/appModulo1/views');
 file_put_contents($temporal . '/appModulo1/models/Database.php', '<?php
 class Database {
     public static $pdo;
@@ -62,7 +63,7 @@ class Database {
     public static function logError($mensaje) { self::$errores[] = $mensaje; }
 }');
 $entradas = ['alta.php', 'modi.php', 'baja.php', 'salidaJsonRenglones.php', 'salidaJsonUnidades.php', 'traeBinario.php'];
-foreach ($entradas as $entrada) copy($origen . '/../' . $entrada, $temporal . '/appModulo1/' . $entrada);
+foreach ($entradas as $entrada) copy($origen . '/../views/' . $entrada, $temporal . '/appModulo1/views/' . $entrada);
 copy($origen . '/../../manejoSesion.inc', $temporal . '/manejoSesion.inc');
 require $temporal . '/appModulo1/models/Database.php';
 session_start();
@@ -80,7 +81,7 @@ $resultados = [];
 foreach ([false, true] as $generado) {
     Database::$pdo = new BasePrueba($generado);
     Database::$errores = [];
-    $app = $temporal . '/appModulo1/';
+    $app = $temporal . '/appModulo1/views/';
     $pdf = $temporal . '/prueba.pdf';
     file_put_contents($pdf, "%PDF-1.4\nDocumento de prueba");
     $datos = ['nroFactura'=>'1001', 'fechaFactura'=>'2026-11-10', 'codArticulo'=>'ART-01',

@@ -115,11 +115,11 @@ function guardarClavesExistentes(filas) {
   });
 }
 
-// Trae las claves completas, sin los filtros de la tabla.
+// Trae las claves completas, sin los filtros de la tabla y detecta dupe
 async function actualizarClavesExistentes() {
   try {
     var datos = new URLSearchParams({ orden: "nroFactura" });
-    var texto = await enviarPeticionAjax("salidaJsonRenglones.php", datos);
+    var texto = await enviarPeticionAjax("views/salidaJsonRenglones.php", datos);
     guardarClavesExistentes(JSON.parse(texto).renglones || []);
     if (document.getElementById("ventanaModalFormularioAlta").classList.contains("activo")) {
       validarFormularioAlta();
@@ -153,7 +153,7 @@ function validarDuplicadoEnFactura() {
 // Obtiene los datos privados sin escribir PHP dentro del template HTML.
 async function cargarSesion() {
   try {
-    var texto = await enviarPeticionAjax("datosSesion.php", null);
+    var texto = await enviarPeticionAjax("views/datosSesion.php", null);
     var sesion = JSON.parse(texto);
     document.getElementById("usuarioSesion").textContent = sesion.login;
     document.getElementById("contadorSesion").textContent = sesion.contador;
@@ -166,7 +166,7 @@ async function cargarSesion() {
 // Pide las unidades al PHP y las conserva para los selectores.
 async function cargarUnidades() {
   try {
-    var texto = await enviarPeticionAjax("salidaJsonUnidades.php", null);
+    var texto = await enviarPeticionAjax("views/salidaJsonUnidades.php", null);
     alert(texto);
     unidades = JSON.parse(texto).unidades || [];
     llenarFiltroUnidades();
@@ -227,7 +227,7 @@ async function cargarDatos(silencioso) {
   if (!silencioso) alert("Lo que sale del navegador en el body:\n" + datos.toString());
   cuerpoTabla.innerHTML = '<tr><td colspan="11">Esperando respuesta…</td></tr>';
   try {
-    var texto = await enviarPeticionAjax("salidaJsonRenglones.php", datos);
+    var texto = await enviarPeticionAjax("views/salidaJsonRenglones.php", datos);
     // Una búsqueda anterior puede responder después de la más reciente.
     if (numeroPeticion !== ultimaPeticionListado) return;
     if (!silencioso) alert(texto);
@@ -297,7 +297,7 @@ function completarFormularioModificacion(articulo) {
 async function guardarAlta() {
   try {
     var datos = new FormData(formularioAlta); // Incluye los campos y el PDF elegido.
-    var texto = await enviarPeticionAjax("alta.php", datos);
+    var texto = await enviarPeticionAjax("views/alta.php", datos);
     mostrarRespuestaServidor(texto);
     cerrarFormularioAlta();
     await actualizarClavesExistentes(); // Primero actualiza las claves y después la tabla.
@@ -311,7 +311,7 @@ async function guardarAlta() {
 async function guardarModificacion() {
   try {
     var datos = new FormData(formularioModificacion);
-    var texto = await enviarPeticionAjax("modi.php", datos);
+    var texto = await enviarPeticionAjax("views/modi.php", datos);
     mostrarRespuestaServidor(texto);
     cerrarFormularioModificacion();
     cargarDatos(true);
@@ -327,7 +327,7 @@ async function eliminarRenglon(numeroFactura, codigoArticulo) {
     var datos = new FormData();
     datos.append("nroFactura", numeroFactura);
     datos.append("codArticulo", codigoArticulo);
-    var texto = await enviarPeticionAjax("baja.php", datos);
+    var texto = await enviarPeticionAjax("views/baja.php", datos);
     mostrarRespuestaServidor(texto);
     await actualizarClavesExistentes();
     cargarDatos(true);
@@ -338,7 +338,7 @@ async function eliminarRenglon(numeroFactura, codigoArticulo) {
 
 // Pide el PDF en Base64 y lo muestra dentro del iframe.
 async function mostrarPdf(numeroFactura, codigoArticulo) {
-  var url = "traeBinario.php?nroFactura=" + encodeURIComponent(numeroFactura) + "&codArticulo=" + encodeURIComponent(codigoArticulo);
+  var url = "views/traeBinario.php?nroFactura=" + encodeURIComponent(numeroFactura) + "&codArticulo=" + encodeURIComponent(codigoArticulo);
   try {
     var texto = await enviarPeticionAjax(url, null);
     var respuesta = JSON.parse(texto);

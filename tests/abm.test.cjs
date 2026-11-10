@@ -32,15 +32,17 @@ async function abrirApp(t) {
   await page.route('https://abm.test/**', async route => {
     const request = route.request();
     const url = new URL(request.url());
-    const nombre = url.pathname.substring(1);
-    if (!nombre) {
+    const ruta = url.pathname.substring(1);
+    const nombre = path.posix.basename(ruta);
+    if (!ruta) {
       const html = fs.readFileSync(path.join(root, 'index.php'), 'utf8').replace(/^<\?php[\s\S]*?\?>\s*/, '');
       return route.fulfill({ contentType: 'text/html', body: html });
     }
-    if (['abm.js', 'jquery.js', 'estilo.css'].includes(nombre)) {
-      return route.fulfill({ contentType: nombre.endsWith('.js') ? 'text/javascript' : 'text/css', body: fs.readFileSync(path.join(root, nombre), 'utf8') });
+    if (['templates/abm.js', 'templates/estilo.css'].includes(ruta)) {
+      return route.fulfill({ contentType: nombre.endsWith('.js') ? 'text/javascript' : 'text/css', body: fs.readFileSync(path.join(root, ruta), 'utf8') });
     }
     if (nombre === 'destruirsesion.php') return route.fulfill({ body: 'Sesión cerrada' });
+    if (!ruta.startsWith('views/') || !fs.existsSync(path.join(root, ruta))) return route.abort();
     if (nombre === 'datosSesion.php') return route.fulfill({ json: { login: 'admin <prueba>', contador: 29, identificativo: 'sesion-prueba' } });
     const body = request.postData() || '';
     const datos = new URLSearchParams(body);
