@@ -8,6 +8,12 @@ if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todaví
     session_start(); // Abre o retoma la sesión del navegador mediante su cookie.
 }
 
+// El apunte pide comprobar la sesión también antes de cerrarla.
+if (empty($_SESSION['identificativo'])) {
+    header('Location: ./formularioDeLogin.html');
+    exit();
+}
+
 $_SESSION = []; // Vacía las variables guardadas para esta sesión.
 
 if (ini_get("session.use_cookies")) { // Revisa si la sesión se identifica mediante una cookie.

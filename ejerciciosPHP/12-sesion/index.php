@@ -15,7 +15,7 @@ if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todaví
 // PASO 1: Evaluar si el usuario ya está autenticado con sesión activa
 // ========================================================================================
 // Comprueba el dato que indica si este usuario ya se autenticó.
-if (!isset($_SESSION['identificativo']) || empty($_SESSION['identificativo'])) {
+if (empty($_SESSION['identificativo'])) {
     // No hay sesión activa -> Redirección obligatoria al formulario de login
     header('Location: ./formularioDeLogin.html'); // Redirige al navegador a la página indicada.
     exit(); // Termina este pedido para que no continúe el código de abajo.

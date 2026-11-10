@@ -5,6 +5,13 @@
 // Se puede ejecutar desde el navegador una sola vez si se desea cargar usuarios de prueba.
 // ========================================================================================
 
+// Esta carga de usuarios es una tarea administrativa dentro de la sesión.
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['identificativo'])) {
+    header('Location: ./formularioDeLogin.html');
+    exit();
+}
+
 include __DIR__ . '/datosConexionBase.php';
 
 try {

@@ -15,7 +15,7 @@ if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todaví
 // Si no existe, significa que el usuario intenta entrar de forma ilegal sin autenticarse.
 // ========================================================================================
 // Comprueba el dato que indica si este usuario ya se autenticó.
-if (!isset($_SESSION['identificativo']) || empty($_SESSION['identificativo'])) {
+if (empty($_SESSION['identificativo'])) { // empty también contempla que la variable no exista.
     header('Location: ../index.php'); // Redirige al navegador a la página indicada.
     exit(); // Termina este pedido para que no continúe el código de abajo.
 }

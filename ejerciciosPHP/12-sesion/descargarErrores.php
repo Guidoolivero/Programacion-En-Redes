@@ -8,6 +8,12 @@ if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todaví
     session_start(); // Abre o retoma la sesión del navegador mediante su cookie.
 }
 
+// El registro de errores se descarga dentro de una sesión autenticada.
+if (empty($_SESSION['identificativo'])) {
+    header('Location: ./formularioDeLogin.html');
+    exit();
+}
+
 $rutas = [ // Lista los archivos de errores que se intentarán reunir.
     __DIR__ . "/errores.log",
     __DIR__ . "/appModulo1/errores.log",

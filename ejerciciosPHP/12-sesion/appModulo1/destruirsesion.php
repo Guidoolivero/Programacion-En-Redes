@@ -5,9 +5,7 @@
 // OBJETIVO: Destruye la sesión de usuario y redirige al formulario de login.
 // ========================================================================================
 
-if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todavía no abrió una sesión PHP.
-    session_start(); // Abre o retoma la sesión del navegador mediante su cookie.
-}
+include __DIR__ . '/../manejoSesion.inc'; // Comprueba la sesión antes de cerrarla.
 
 // 1. Vaciar el arreglo $_SESSION
 $_SESSION = []; // Vacía las variables guardadas para esta sesión.

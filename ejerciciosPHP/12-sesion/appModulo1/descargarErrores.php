@@ -4,9 +4,7 @@
 // OBJETIVO: Consolida y descarga todos los registros de errores (errores.log).
 // ========================================================================================
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include __DIR__ . '/../manejoSesion.inc'; // Protege también la descarga de errores.
 
 $rutas = [
     __DIR__ . "/errores.log",

@@ -1,3 +1,4 @@
+<?php include __DIR__ . '/../../manejoSesion.inc'; // Protege el acceso directo a la plantilla. ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

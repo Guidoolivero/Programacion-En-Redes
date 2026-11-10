@@ -76,7 +76,7 @@ function autenticacion($log, $cl, &$nuevoContador) {
 // Si NO hay sesión iniciada, ejecutamos el proceso de autenticación y creación de sesión.
 // ========================================================================================
 // Comprueba el dato que indica si este usuario ya se autenticó.
-if (!isset($_SESSION['identificativo']) || empty($_SESSION['identificativo'])) {
+if (empty($_SESSION['identificativo'])) {
     $loginIngresado = $_POST['login'] ?? ''; // Lee el usuario enviado desde el formulario de login.
     $passIngresada  = $_POST['password'] ?? ''; // Lee la contraseña enviada desde el formulario.
 
