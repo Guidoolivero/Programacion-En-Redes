@@ -1,0 +1,5 @@
+# El acceso al módulo pasa por el PHP que comprueba la sesión.
+DirectoryIndex index.php
+RewriteEngine On
+RewriteBase /ejerciciosPHP/12-sesion/appModulo1/
+RewriteRule ^index\.html$ index.php [R=302,L]

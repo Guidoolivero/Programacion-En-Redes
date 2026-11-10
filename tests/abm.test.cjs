@@ -34,14 +34,14 @@ async function abrirApp(t) {
     const url = new URL(request.url());
     const nombre = url.pathname.substring(1);
     if (!nombre) {
-      const html = fs.readFileSync(path.join(root, 'templates/abm_template.php'), 'utf8')
-        .replace(/<\?php[\s\S]*?\?>/g, '').replace(/<\?=[\s\S]*?\?>/g, 'admin');
+      const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
       return route.fulfill({ contentType: 'text/html', body: html });
     }
     if (['abm.js', 'jquery.js', 'estilo.css'].includes(nombre)) {
       return route.fulfill({ contentType: nombre.endsWith('.js') ? 'text/javascript' : 'text/css', body: fs.readFileSync(path.join(root, nombre), 'utf8') });
     }
     if (nombre === 'destruirsesion.php') return route.fulfill({ body: 'Sesión cerrada' });
+    if (nombre === 'datosSesion.php') return route.fulfill({ json: { login: 'admin <prueba>', contador: 29, identificativo: 'sesion-prueba' } });
     const body = request.postData() || '';
     const datos = new URLSearchParams(body);
     estado.peticiones.push({ nombre, metodo: request.method(), body, tipo: request.resourceType(), query: url.searchParams });
@@ -74,6 +74,15 @@ async function cargar(page) {
   await page.locator('#btnCargar').click();
   await expect(page.locator('#tbDatos tr')).toHaveCount(2);
 }
+
+test('La sesión se muestra como texto desde la respuesta PHP', async t => {
+  const { page, estado } = await abrirApp(t);
+  await expect(page.locator('#usuarioSesion')).toHaveText('admin <prueba>');
+  await expect(page.locator('#contadorSesion')).toHaveText('29');
+  await expect(page.locator('#identificativoSesion')).toHaveText('sesion-prueba');
+  await expect(page.locator('#usuarioSesion prueba')).toHaveCount(0);
+  assert.deepEqual(estado.errores, []);
+});
 
 test('Inicio, carga, filtros, orden, limpieza y vaciado conservan sus resultados', async t => {
   const { page, estado } = await abrirApp(t);

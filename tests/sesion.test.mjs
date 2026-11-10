@@ -12,7 +12,6 @@ const php = new PHP(await loadNodeRuntime('8.2', { emscriptenOptions: { processI
 const raiz = fileURLToPath(new URL('../ejerciciosPHP/12-sesion/', import.meta.url));
 php.mkdir('/ej12');
 php.mkdir('/ej12/appModulo1');
-php.mkdir('/ej12/appModulo1/templates');
 
 const rutas = [
     ['index.php', './formularioDeLogin.html'],
@@ -28,11 +27,12 @@ const rutas = [
     ['appModulo1/traeBinario.php', '../index.php'],
     ['appModulo1/destruirsesion.php', '../index.php'],
     ['appModulo1/descargarErrores.php', '../index.php'],
-    ['appModulo1/templates/abm_template.php', '../index.php'],
+    ['appModulo1/datosSesion.php', '../index.php'],
 ];
 for (const archivo of ['manejoSesion.inc', 'ingresoAlSistema.php', ...rutas.map(([ruta]) => ruta)]) {
     php.writeFile('/ej12/' + archivo, fs.readFileSync(path.join(raiz, archivo)));
 }
+php.writeFile('/ej12/appModulo1/index.html', fs.readFileSync(path.join(raiz, 'appModulo1/index.html')));
 // No se copian configuraciones ni credenciales reales al entorno de pruebas.
 php.writeFile('/ej12/datosConexionBase.php', '<?php');
 
@@ -58,12 +58,18 @@ async function autenticado(archivo, extra = '') {
         ${extra}
         chdir('/ej12/${path.dirname(archivo)}'); include '${path.basename(archivo)}';` });
 }
-for (const archivo of ['index.php', 'ingresoAlSistema.php', 'appModulo1/templates/abm_template.php']) {
+for (const archivo of ['index.php', 'ingresoAlSistema.php']) {
     const respuesta = await autenticado(archivo);
     assert.equal(respuesta.httpStatusCode, 200, archivo + ': debe permitir el acceso autenticado');
     assert(respuesta.text.includes('Guido &lt;prueba&gt;'), archivo + ': debe mostrar el usuario escapado');
     assert(respuesta.text.includes('7'), archivo + ': debe conservar el contador en el reload');
 }
+const plantilla = await autenticado('appModulo1/index.php');
+assert.equal(plantilla.httpStatusCode, 200);
+assert(plantilla.text.includes('id="usuarioSesion"'));
+assert(!plantilla.text.includes('<?php'));
+const sesion = await autenticado('appModulo1/datosSesion.php');
+assert.deepEqual(sesion.json, { login: 'Guido <prueba>', contador: 7, identificativo: 'sesion-valida' });
 php.writeFile('/ej12/errores.log', '# comentario\nError uno\nError uno\nError dos\n');
 php.writeFile('/ej12/appModulo1/errores.log', 'Error uno\nError dos\n');
 for (const archivo of ['descargarErrores.php', 'appModulo1/descargarErrores.php']) {

@@ -54,7 +54,6 @@ function comprobar($condicion, $mensaje) {
 $origen = __DIR__ . '/../ejerciciosPHP/12-sesion/appModulo1/models';
 $temporal = sys_get_temp_dir() . '/ej12-model-' . uniqid();
 mkdir($temporal . '/appModulo1/models', 0777, true);
-mkdir($temporal . '/appModulo1/views');
 file_put_contents($temporal . '/appModulo1/models/Database.php', '<?php
 class Database {
     public static $pdo;
@@ -63,8 +62,20 @@ class Database {
     public static function logError($mensaje) { self::$errores[] = $mensaje; }
 }');
 copy($origen . '/RenglonesModel.php', $temporal . '/appModulo1/models/RenglonesModel.php');
-copy($origen . '/../views/RenglonesView.php', $temporal . '/appModulo1/views/RenglonesView.php');
-require $temporal . '/appModulo1/views/RenglonesView.php';
+$entradas = ['alta.php', 'modi.php', 'baja.php', 'salidaJsonRenglones.php', 'salidaJsonUnidades.php', 'traeBinario.php'];
+foreach ($entradas as $entrada) copy($origen . '/../' . $entrada, $temporal . '/appModulo1/' . $entrada);
+copy($origen . '/../../manejoSesion.inc', $temporal . '/manejoSesion.inc');
+require $temporal . '/appModulo1/models/RenglonesModel.php';
+session_start();
+$_SESSION['identificativo'] = 'sesion-prueba';
+function respuestaPhp($archivo, $post = [], $get = []) {
+    $_POST = $post;
+    $_GET = $get;
+    $_FILES = [];
+    ob_start();
+    include $archivo;
+    return ob_get_clean();
+}
 
 $resultados = [];
 foreach ([false, true] as $generado) {
@@ -131,23 +142,22 @@ foreach ([false, true] as $generado) {
     comprobar($modelo->getRenglones()['cantidad'] === 1, 'El borrado debe respetar la otra factura.');
     comprobar($pdo->consultasEstructura === 1, 'La estructura se consulta una sola vez por modelo.');
 
-    // Comprueba también el contrato JSON que consume fetch en abm.js.
-    $vista = new RenglonesView();
-    ob_start();
-    $vista->emitirBinarioPdf('1002', 'ART-01');
-    $respuesta = json_decode(ob_get_clean(), true, 512, JSON_THROW_ON_ERROR);
-    comprobar($respuesta === ['documentoPdf' => base64_encode(file_get_contents($pdf))], 'La vista debe conservar el JSON de la vista previa.');
-    ob_start();
-    $vista->emitirBinarioPdf('9999', 'ART-01');
-    comprobar(json_decode(ob_get_clean(), true) === ['documentoPdf' => null], 'Un PDF ausente debe seguir respondiendo null.');
-    ob_start();
-    $vista->emitirJsonRenglones([], 'nroFactura');
-    $respuesta = json_decode(ob_get_clean(), true, 512, JSON_THROW_ON_ERROR);
+    // Comprueba las vistas PHP reales que recibe fetch, sin la clase intermediaria.
+    $app = $temporal . '/appModulo1/';
+    $respuesta = json_decode(respuestaPhp($app . 'traeBinario.php', [], ['nroFactura'=>'1002', 'codArticulo'=>'ART-01']), true, 512, JSON_THROW_ON_ERROR);
+    comprobar($respuesta === ['documentoPdf'=>base64_encode(file_get_contents($pdf))], 'La vista debe conservar el JSON del PDF.');
+    comprobar(json_decode(respuestaPhp($app . 'traeBinario.php', [], ['nroFactura'=>'9999', 'codArticulo'=>'ART-01']), true) === ['documentoPdf'=>null], 'Un PDF ausente debe responder null.');
+    $respuesta = json_decode(respuestaPhp($app . 'salidaJsonRenglones.php'), true, 512, JSON_THROW_ON_ERROR);
     comprobar($respuesta['cantidad'] === 1 && $respuesta['renglones'][0]['nroFactura'] == 1002, 'La vista debe conservar la lista JSON.');
-    ob_start();
-    $vista->emitirJsonUnidades();
-    $respuesta = json_decode(ob_get_clean(), true, 512, JSON_THROW_ON_ERROR);
-    comprobar(count($respuesta['unidades']) === 2, 'La vista debe conservar el JSON de unidades.');
+    $respuesta = json_decode(respuestaPhp($app . 'salidaJsonUnidades.php'), true, 512, JSON_THROW_ON_ERROR);
+    comprobar(count($respuesta['unidades']) === 2, 'La vista debe conservar las unidades.');
+    $datos['nroFactura'] = '1003';
+    comprobar(str_contains(respuestaPhp($app . 'alta.php', $datos), 'Alta de renglón 1003 / ART-01 correcta'), 'alta.php debe llamar al modelo.');
+    $datos['descripcion'] = 'Modificado desde la vista';
+    comprobar(str_contains(respuestaPhp($app . 'modi.php', $datos), 'Modificacion de renglón 1003 / ART-01 correcta'), 'modi.php debe llamar al modelo.');
+    comprobar($modelo->getRenglones(['f_nroFactura'=>'1003'])['renglones'][0]['descripcion'] === $datos['descripcion'], 'La vista debe guardar la modificación.');
+    comprobar(str_contains(respuestaPhp($app . 'baja.php', ['nroFactura'=>'1003', 'codArticulo'=>'ART-01']), 'Baja de renglón 1003 / ART-01 correcta'), 'baja.php debe llamar al modelo.');
+    comprobar(!$modelo->existeRenglon('1003', 'ART-01'), 'La vista debe eliminar la fila.');
 
     $pdo->exec('DROP TABLE renglones_factura');
     comprobar($modelo->getRenglones()['cantidad'] === 0, 'El listado debe conservar su respuesta ante un error SQL.');

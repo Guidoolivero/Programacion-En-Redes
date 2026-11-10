@@ -1,4 +1,3 @@
-<?php include __DIR__ . '/../../manejoSesion.inc'; // Protege el acceso directo a la plantilla. ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,19 +18,17 @@
     <h1>Renglones de factura de ventas (Módulo 1)</h1>
     <p>Alumno: Guido Olivero — Ejercicio 12: Manejo de Sesión + CRUD MVT</p>
 
-    <!-- Este recuadro muestra los datos guardados durante el login. -->
-    <?php if (isset($_SESSION['login'])): ?>
+    <!-- cargarSesion() completa este recuadro con la respuesta del PHP protegido. -->
       <div style="background: #e6fffa; border: 1px solid #38b2ac; color: #234e52; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <strong>Usuario en sesión:</strong> <code><?= htmlspecialchars($_SESSION['login']) ?></code> |
-          <strong>Contador de accesos:</strong> <span style="background:#319795; color:#fff; padding:2px 8px; border-radius:10px; font-weight:bold;"><?= htmlspecialchars($_SESSION['ContadorDeSesion'] ?? '1') ?></span> |
-          <strong>ID Sesión:</strong> <code style="font-size:12px;"><?= htmlspecialchars($_SESSION['identificativo'] ?? '') ?></code>
+          <strong>Usuario en sesión:</strong> <code id="usuarioSesion"></code> |
+          <strong>Contador de accesos:</strong> <span id="contadorSesion" style="background:#319795; color:#fff; padding:2px 8px; border-radius:10px; font-weight:bold;"></span> |
+          <strong>ID Sesión:</strong> <code id="identificativoSesion" style="font-size:12px;"></code>
         </div>
         <div>
           <span style="font-size: 12px; color: #2c7a7b;">● Módulo protegido con <code>manejoSesion.inc</code></span>
         </div>
       </div>
-    <?php endif; ?>
 
     <!-- Los ID de estos botones se buscan al iniciar abm.js. -->
     <div class="controles">
@@ -155,6 +152,6 @@
   </div>
 
   <!-- Carga los eventos y funciones JavaScript después del HTML. -->
-  <script src="abm.js?v=20261110-simple"></script>
+  <script src="abm.js?v=20261110-mvt"></script>
 </body>
 </html>

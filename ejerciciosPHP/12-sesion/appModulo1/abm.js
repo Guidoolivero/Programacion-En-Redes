@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("orden").value = "nroFactura";
   document.getElementById("btEnvioFormAlta").disabled = true;
   document.getElementById("btEnvioFormModi").disabled = true;
+  cargarSesion(); // Completa usuario, contador e identificativo desde PHP.
   cargarUnidades();
   actualizarClavesExistentes();
 
@@ -146,6 +147,19 @@ function validarDuplicadoEnFactura() {
     mensaje.textContent = ""; // Borra el error cuando la combinación es válida.
     mensaje.style.display = "none"; // Oculta el mensaje que ya no corresponde.
     campoCodigoArticuloAlta.style.borderColor = ""; // Restaura el borde normal del campo.
+  }
+}
+
+// Obtiene los datos privados sin escribir PHP dentro del template HTML.
+async function cargarSesion() {
+  try {
+    var texto = await enviarPeticionAjax("datosSesion.php", null);
+    var sesion = JSON.parse(texto);
+    document.getElementById("usuarioSesion").textContent = sesion.login;
+    document.getElementById("contadorSesion").textContent = sesion.contador;
+    document.getElementById("identificativoSesion").textContent = sesion.identificativo;
+  } catch (error) {
+    alert("Error de sesión: " + error);
   }
 }
 

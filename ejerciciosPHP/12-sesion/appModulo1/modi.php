@@ -3,12 +3,12 @@
 // ARCHIVO: appModulo1/modi.php (Protegido por sesión)
 // OBJETIVO: Endpoint AJAX para modificación de renglón con PDF opcional.
 //
-// PRIMERA LÍNEA: Protección de sesión con include('../manejoSesion.inc');
+// PRIMERA LÍNEA: Protección de sesión con include __DIR__ . '/../manejoSesion.inc';
 // ========================================================================================
 
-include('../manejoSesion.inc'); // Comprueba la sesión antes de continuar con este pedido.
+include __DIR__ . '/../manejoSesion.inc'; // Comprueba la sesión antes de continuar con este pedido.
 
-require_once __DIR__ . '/views/RenglonesView.php'; // Carga la clase que coordina la petición con el modelo.
+require_once __DIR__ . '/models/RenglonesModel.php'; // La vista usa el modelo para acceder a MySQL.
 
 $datos = [ // Reúne los campos que llegaron del formulario.
     'nroFactura'     => $_POST['nroFactura'] ?? '', // Lee la factura; ?? usa un valor vacío si no vino.
@@ -22,6 +22,8 @@ $datos = [ // Reúne los campos que llegaron del formulario.
 
 $archivoPdf = $_FILES['documentoPdf'] ?? null; // Recibe la información del PDF temporal, si se adjuntó uno.
 
-// Delegación a la capa View (MVT)
-$view = new RenglonesView(); // Crea la vista; su constructor prepara el modelo.
-$view->procesarModi($datos, $archivoPdf); // La vista llama a actualizarRenglon, donde está el UPDATE.
+// Vista PHP: llama al modelo y devuelve la respuesta de esta operación.
+$modelo = new RenglonesModel();
+$traza = '';
+$modelo->actualizarRenglon($datos, $traza, $archivoPdf);
+echo $traza;
