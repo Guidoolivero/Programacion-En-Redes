@@ -38,7 +38,7 @@ try {
     $existe = false;
     if ($nro !== '' && $cod !== '') {
         try {
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM renglones_factura WHERE TRIM(nro_factura)=:nro AND LOWER(TRIM(cod_articulo))=LOWER(:cod)");
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM renglones_factura WHERE nro_factura=:nro AND LOWER(TRIM(cod_articulo))=LOWER(:cod)");
             $stmt->execute([':nro'=>$nro, ':cod'=>$cod]);
             $existe = (int)$stmt->fetchColumn() > 0;
         } catch (PDOException $e) {
