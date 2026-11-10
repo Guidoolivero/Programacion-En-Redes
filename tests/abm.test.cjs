@@ -211,6 +211,17 @@ test('El filtro espera al escribir e ignora respuestas de búsquedas anteriores'
   assert.deepEqual(estado.errores, []);
 });
 
+test('Enter ejecuta una sola búsqueda sin repetirla después de los 300 ms', async t => {
+  const { page, estado } = await abrirApp(t);
+  await page.locator('#f_descripcion').fill('COBRE');
+  await page.locator('#f_descripcion').press('Enter');
+  await expect(page.locator('#tbDatos')).toContainText('COBRE');
+  await page.waitForTimeout(400);
+  const busquedas = estado.peticiones.filter(p => p.nombre === 'salidaJsonRenglones.php' && new URLSearchParams(p.body).get('f_descripcion') === 'COBRE');
+  assert.equal(busquedas.length, 1);
+  assert.deepEqual(estado.errores, []);
+});
+
 test('Errores de JSON y de red se notifican sin excepciones sin controlar', async t => {
   const { page, estado } = await abrirApp(t);
   await page.locator('#f_descripcion').fill('json-invalido');

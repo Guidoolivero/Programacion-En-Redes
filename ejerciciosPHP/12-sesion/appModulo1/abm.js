@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function() { // Ejecuta este bloqu
 
   document.querySelectorAll("#f_nroFactura, #f_codArticulo, #f_descripcion").forEach(function(campo) {
     campo.oninput = programarFiltro; // Busca después de escribir o pegar texto.
-    campo.onkeyup = programarFiltro; // También programa la búsqueda al soltar una tecla.
     campo.onkeydown = function(evento) { // Revisa si la tecla presionada fue Enter.
       if (evento.key === "Enter") { // Enter permite buscar sin esperar los 300 ms.
         evento.preventDefault(); // Evita el envío tradicional y la recarga de la página.
