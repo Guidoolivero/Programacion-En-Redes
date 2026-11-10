@@ -155,6 +155,6 @@ include __DIR__ . '/../manejoSesion.inc'; // Protección de sesión antes del te
   </div>
 
   <!-- Carga los eventos y funciones JavaScript después del HTML. -->
-  <script src="abm.js?v=20261110-css"></script>
+  <script src="abm.js?v=20261110-unidades"></script>
 </body>
 </html>

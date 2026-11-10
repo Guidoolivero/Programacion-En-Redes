@@ -7,13 +7,6 @@ header('Content-Type: application/json; charset=utf-8');
 sleep(1); // Espera didáctica del listado.
 
 $orden = $_POST['orden'] ?? 'nroFactura'; // Usa el orden recibido o nroFactura como valor inicial.
-$filtros = [ // Agrupa los cinco filtros recibidos por este PHP.
-    'f_nroFactura'   => $_POST['f_nroFactura'] ?? '',
-    'f_codArticulo'  => $_POST['f_codArticulo'] ?? '',
-    'f_unidadMedida' => $_POST['f_unidadMedida'] ?? '',
-    'f_descripcion'  => $_POST['f_descripcion'] ?? '',
-    'f_fechaFactura' => $_POST['f_fechaFactura'] ?? '',
-];
 
 // Aplica los filtros y ejecuta el SELECT en este mismo archivo.
 if (!$pdo) {
@@ -32,92 +25,36 @@ if (!in_array($orden, array_keys($mapaOrden), true)) { // Un orden desconocido u
 }
 
 try {
-    $unidades = [];
-    try {
-        $unidades = $pdo->query("SELECT * FROM unidades_medida")->fetchAll();
-    } catch (PDOException $e) {
-        Database::logError('Unidades: ' . $e->getMessage());
-    }
-    $mapaMostrar = []; // Cualquier valor en BD -> código para mostrar/seleccionar en frontend
-    $filas = $unidades; // Lee la tabla auxiliar de unidades.
-
-    foreach ($filas as $u) {
-        $vals    = array_values($u); // Permite consultar los valores también por posición.
-        // Intenta reconocer el identificador numérico de la unidad.
-        $idVal   = $u['id'] ?? $u['id_unidad'] ?? $u['id_um'] ?? null;
-        // Intenta reconocer el código de unidad, por ejemplo UN.
-        $codVal  = $u['cod_um'] ?? $u['codigo'] ?? $u['codUm'] ?? $u['unidad_medida'] ?? ($vals[0] ?? '');
-        // Intenta reconocer la descripción visible de la unidad.
-        $descVal = $u['descripcion'] ?? $u['descripcionUm'] ?? $u['nombre'] ?? ($vals[1] ?? $codVal);
-        // Para mostrar la unidad, prefiere el código a la descripción.
-        $preferido = ($codVal !== '') ? (string)$codVal : (string)$descVal;
-
-        if ($idVal !== null) $mapaMostrar[(string)$idVal] = $preferido;
-        if ($codVal !== '')  $mapaMostrar[(string)$codVal] = (string)$codVal;
-        if ($descVal !== '') $mapaMostrar[(string)$descVal] = $preferido;
-    }
-
-    $infoUm = ['filas'=>$filas, 'mapaMostrar'=>$mapaMostrar];
-    $mapaUmTexto = $infoUm['mapaMostrar'];
-
-    $colOrden = $mapaOrden[$orden];
+    $colOrden = $mapaOrden[$orden]; //Nombre Columna
 
     $condiciones = []; // Acumula las condiciones que formarán el WHERE.
     $params = []; // Guarda los valores que se vincularán a los parámetros SQL.
 
-    $fNro   = trim((string)($filtros['f_nroFactura'] ?? '')); // Lee el filtro de factura y quita espacios externos.
+    $fNro   = trim((string)($_POST['f_nroFactura'] ?? '')); // Lee el filtro de factura y quita espacios externos.
     // Lee el filtro de artículo y quita espacios externos.
-    $fCod   = trim((string)($filtros['f_codArticulo'] ?? ''));
-    $fUm    = trim((string)($filtros['f_unidadMedida'] ?? '')); // Lee la unidad elegida en el filtro.
-    $fDesc  = trim((string)($filtros['f_descripcion'] ?? '')); // Lee el texto de búsqueda de la descripción.
-    $fFecha = trim((string)($filtros['f_fechaFactura'] ?? '')); // Lee la fecha usada como filtro.
+    $fCod   = trim((string)($_POST['f_codArticulo'] ?? ''));
+    $fUm    = trim((string)($_POST['f_unidadMedida'] ?? '')); // Lee la unidad elegida en el filtro.
+    $fDesc  = trim((string)($_POST['f_descripcion'] ?? '')); // Lee el texto de búsqueda de la descripción.
+    $fFecha = trim((string)($_POST['f_fechaFactura'] ?? '')); // Lee la fecha usada como filtro.
 
     if ($fNro !== '') {
-        $condiciones[] = "LOWER(CAST(`nro_factura` AS CHAR)) LIKE LOWER(:f_nro)";
+        $condiciones[] = "`nro_factura` LIKE :f_nro";
         $params[':f_nro'] = '%' . $fNro . '%'; // Los signos % permiten buscar una coincidencia parcial.
     }
     if ($fCod !== '') {
-        $condiciones[] = "LOWER(CAST(`cod_articulo` AS CHAR)) LIKE LOWER(:f_cod)";
+        $condiciones[] = "LOWER(`cod_articulo`) LIKE LOWER(:f_cod)";
         $params[':f_cod'] = '%' . $fCod . '%'; // Busca el texto del código dentro del valor de la columna.
     }
     if ($fUm !== '') {
-        $equivalencias = [strtolower($fUm)]; // Permite filtrar una unidad por ID, código o descripción.
-        foreach ($infoUm['filas'] as $u) {
-            $vals    = array_values($u); // Permite consultar los valores también por posición.
-            // Intenta reconocer el identificador numérico de la unidad.
-            $idVal   = $u['id'] ?? $u['id_unidad'] ?? $u['id_um'] ?? null;
-            // Intenta reconocer el código de unidad, por ejemplo UN.
-            $codVal  = $u['cod_um'] ?? $u['codigo'] ?? $u['codUm'] ?? $u['unidad_medida'] ?? ($vals[0] ?? '');
-            // Intenta reconocer la descripción visible de la unidad.
-            $descVal = $u['descripcion'] ?? $u['descripcionUm'] ?? $u['nombre'] ?? ($vals[1] ?? '');
-            if (
-                ($idVal !== null && strcasecmp((string)$idVal, $fUm) === 0) ||
-                ($codVal !== '' && strcasecmp((string)$codVal, $fUm) === 0) ||
-                ($descVal !== '' && strcasecmp((string)$descVal, $fUm) === 0)
-            ) {
-                if ($idVal !== null) $equivalencias[] = strtolower(trim((string)$idVal));
-                if ($codVal !== '')  $equivalencias[] = strtolower(trim((string)$codVal));
-                if ($descVal !== '') $equivalencias[] = strtolower(trim((string)$descVal));
-            }
-        }
-        // Quita equivalencias vacías o repetidas antes de armar el IN.
-        $equivalencias = array_values(array_unique(array_filter($equivalencias, function($v) {
-            return $v !== '';
-        })));
-        $phUm = [];
-        foreach ($equivalencias as $idx => $eqVal) {
-            $key = ":f_um_$idx"; // Crea un parámetro SQL distinto para cada equivalencia.
-            $phUm[] = $key;
-            $params[$key] = $eqVal;
-        }
-        $condiciones[] = "LOWER(TRIM(CAST(`cod_um` AS CHAR))) IN (" . implode(', ', $phUm) . ")";
+        $condiciones[] = "`cod_um` = :f_um"; // La unidad se guarda y se filtra por su código (UN, KG...).
+        $params[':f_um'] = $fUm;
     }
     if ($fDesc !== '') {
-        $condiciones[] = "LOWER(CAST(`descripcion` AS CHAR)) LIKE LOWER(:f_desc)";
+        $condiciones[] = "LOWER(`descripcion`) LIKE LOWER(:f_desc)";
         $params[':f_desc'] = '%' . $fDesc . '%'; // Busca la descripción aunque el texto esté en el medio.
     }
     if ($fFecha !== '') {
-        $condiciones[] = "CAST(`fecha_factura` AS CHAR) LIKE :f_fecha";
+        $condiciones[] = "`fecha_factura` LIKE :f_fecha";
         $params[':f_fecha'] = $fFecha . '%'; // El prefijo de fecha permite comparar también fechas con hora.
     }
 
@@ -134,15 +71,6 @@ try {
     $stmt = $pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
     $stmt->execute($params); // SELECT: ejecuta la búsqueda con los valores de los filtros.
     $filas = $stmt->fetchAll(); // Recupera todos los registros encontrados.
-
-    // Normalizar código de Unidad de Medida para visualización y edición consistente
-    foreach ($filas as &$fila) {
-        $rawUm = (string)($fila['unidadMedida'] ?? '');
-        if ($rawUm !== '' && isset($mapaUmTexto[$rawUm])) {
-            $fila['unidadMedida'] = $mapaUmTexto[$rawUm];
-        }
-    }
-    unset($fila);
 
     $resultado = [
         'renglones' => $filas,

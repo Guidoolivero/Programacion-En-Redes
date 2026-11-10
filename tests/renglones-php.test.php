@@ -103,7 +103,8 @@ foreach ([false, true] as $generado) {
     comprobar((float)$filas['renglones'][0]['importeRenglon'] === 24.5, 'El importe debe ser cantidad por precio.');
     $filtros = ['f_nroFactura'=>'1002','f_codArticulo'=>'art-01','f_unidadMedida'=>'KG','f_descripcion'=>'obr','f_fechaFactura'=>'2026-11-10'];
     comprobar($json('salidaJsonRenglones.php', $filtros)['cantidad'] === 1, 'Debe combinar los cinco filtros.');
-    comprobar($json('salidaJsonRenglones.php', ['f_unidadMedida'=>'Kilogramo'])['cantidad'] === 1, 'Debe conservar las equivalencias de unidad.');
+    comprobar($json('salidaJsonRenglones.php', ['f_unidadMedida'=>'UN'])['cantidad'] === 1, 'Debe filtrar por el código de unidad.');
+    comprobar($json('salidaJsonRenglones.php', ['f_unidadMedida'=>'Kilogramo'])['cantidad'] === 0, 'El filtro de unidad compara solo el código.');
     comprobar($json('salidaJsonRenglones.php', ['f_descripcion'=>"' OR 1=1 --"])['cantidad'] === 0, 'Debe parametrizar la búsqueda.');
     comprobar($json('salidaJsonRenglones.php', ['orden'=>'columna_invalida'])['cantidad'] === 2, 'Debe controlar un orden desconocido.');
     $datos['cantidad'] = 2; $datos['precioUnitario'] = 9.25; $datos['descripcion'] = "Conector 'especial'";

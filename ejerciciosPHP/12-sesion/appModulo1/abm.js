@@ -109,7 +109,7 @@ function guardarClavesExistentes(filas) {
   filas.forEach(function(renglon) { // Recorre los registros recibidos; renglon es la fila actual.
     if (renglon.nroFactura && renglon.codArticulo) { // Solo arma claves cuando existen sus dos componentes.
       // Une factura y artículo sin espacios externos ni diferencias de mayúsculas.
-      var clave = String(renglon.nroFactura).trim().toUpperCase() + "||" + String(renglon.codArticulo).trim().toUpperCase();
+      var clave = String(renglon.nroFactura).trim() + "||" + renglon.codArticulo.trim().toUpperCase();
       clavesRenglonesExistentes.push(clave); // Agrega la combinación al arreglo de claves conocidas.
     }
   });
@@ -134,7 +134,7 @@ function validarDuplicadoEnFactura() {
   var campoCodigoArticuloAlta = formularioAlta.elements.codArticulo;
   var numeroFactura = formularioAlta.elements.nroFactura.value.trim();
   var codigoArticulo = campoCodigoArticuloAlta.value.trim();
-  var clave = numeroFactura.toUpperCase() + "||" + codigoArticulo.toUpperCase();
+  var clave = numeroFactura + "||" + codigoArticulo.toUpperCase();
   var mensaje = document.getElementById("msgErrorCodArtAlta");
   if (numeroFactura !== "" && codigoArticulo !== "" && clavesRenglonesExistentes.includes(clave)) {
     // Marca el campo inválido para impedir enviar el alta.
@@ -178,10 +178,9 @@ async function cargarUnidades() {
 // Crea una opción por unidad; puede dejar una seleccionada.
 function agregarOpcionesUnidades(select, unidades, valorSeleccionado) {
   unidades.forEach(function(unidad) { // Recorre cada unidad recibida del servidor.
-    // Elige el código que viajará al PHP al seleccionar la opción.
-    var valor = unidad.cod_um || unidad.codigo || unidad.codUm || unidad.id || unidad.descripcion || "";
-    // Elige la descripción que verá el usuario.
-    var nombre = unidad.descripcion || unidad.descripcionUm || unidad.nombre || valor;
+    // Usa las dos columnas reales de unidades_medida.
+    var valor = unidad.cod_um;
+    var nombre = unidad.descripcion;
     var opcion = document.createElement("option"); // Crea una opción nueva del selector.
     opcion.className = "elementoOptionSelect";
     opcion.value = valor; // Guarda el valor que se enviará al servidor.
