@@ -155,6 +155,6 @@
   </div>
 
   <!-- Carga los eventos y funciones JavaScript después del HTML. -->
-  <script src="abm.js?v=20261106-nombres"></script>
+  <script src="abm.js?v=20261110-simple"></script>
 </body>
 </html>

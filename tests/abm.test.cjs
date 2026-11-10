@@ -222,6 +222,15 @@ test('Enter ejecuta una sola búsqueda sin repetirla después de los 300 ms', as
   assert.deepEqual(estado.errores, []);
 });
 
+test('Elegir una unidad ejecuta una sola búsqueda', async t => {
+  const { page, estado } = await abrirApp(t);
+  await page.locator('#f_unidadMedida').selectOption('KG');
+  await expect(page.locator('#tbDatos')).toContainText('COBRE');
+  const busquedas = estado.peticiones.filter(p => p.nombre === 'salidaJsonRenglones.php' && new URLSearchParams(p.body).get('f_unidadMedida') === 'KG');
+  assert.equal(busquedas.length, 1);
+  assert.deepEqual(estado.errores, []);
+});
+
 test('Errores de JSON y de red se notifican sin excepciones sin controlar', async t => {
   const { page, estado } = await abrirApp(t);
   await page.locator('#f_descripcion').fill('json-invalido');
@@ -231,6 +240,33 @@ test('Errores de JSON y de red se notifican sin excepciones sin controlar', asyn
   const antes = estado.alertas.length;
   await page.locator('#btnCargar').click();
   await expect.poll(() => estado.alertas.slice(antes).some(texto => texto.startsWith('Error:'))).toBe(true);
+  assert.deepEqual(estado.errores, []);
+});
+
+test('Los fallos de alta, modificación, baja y PDF muestran un error sin cerrar los formularios', async t => {
+  const { page, estado } = await abrirApp(t);
+  await cargar(page);
+  estado.fallo = 'traeBinario.php';
+  await page.locator('.btCeldaPdf').first().click();
+  await expect.poll(() => estado.alertas.some(texto => texto.startsWith('Error al obtener PDF:'))).toBe(true);
+  await expect(page.locator('#ventanaModalPdf')).toBeHidden();
+  estado.fallo = 'baja.php';
+  await page.locator('.btCeldaBaja').first().click();
+  await expect.poll(() => estado.alertas.some(texto => texto.startsWith('Error en baja:'))).toBe(true);
+  await expect(page.locator('#tbDatos tr')).toHaveCount(2);
+  estado.fallo = 'modi.php';
+  await page.locator('.btCeldaModi').first().click();
+  await page.locator('#btEnvioFormModi').click();
+  await expect.poll(() => estado.alertas.some(texto => texto.startsWith('Error en modi:'))).toBe(true);
+  await expect(page.locator('#ventanaModalFormularioModi')).toBeVisible();
+  await page.locator('#ventanaModalFormularioModi .cerrar').click();
+  estado.fallo = 'alta.php';
+  await page.locator('#btnAlta').click();
+  for (const [campo, valor] of Object.entries({ Nro: '1009', CodArt: 'ART-99', Descripcion: 'Prueba', Cantidad: '2', Precio: '3' })) await page.locator('#formArticulosEnt' + campo + 'Alta').fill(valor);
+  await page.locator('#formArticulosEntUmAlta').selectOption('UN');
+  await page.locator('#btEnvioFormAlta').click();
+  await expect.poll(() => estado.alertas.some(texto => texto.startsWith('Error en alta:'))).toBe(true);
+  await expect(page.locator('#ventanaModalFormularioAlta')).toBeVisible();
   assert.deepEqual(estado.errores, []);
 });
 
