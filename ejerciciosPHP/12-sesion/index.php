@@ -31,7 +31,7 @@ $idSesion = $_SESSION['identificativo'] ?? session_id(); // Lee el identificativ
 <head>
   <meta charset="UTF-8">
   <title>Sesión Activa — Menú Principal</title>
-  <link rel="stylesheet" href="estiloLogin.css">
+  <link rel="stylesheet" href="estiloLogin.css?v=20261110-css">
 </head>
 <body>
   <!-- Botón para volver al menú principal del sitio (htdocs/index.html) -->
@@ -49,12 +49,12 @@ $idSesion = $_SESSION['identificativo'] ?? session_id(); // Lee el identificativ
       <p><b>ID de Sesión:</b> <?= htmlspecialchars($idSesion) ?></p>
     </div>
 
-    <div class="botones-fila" style="display: flex; flex-direction: column; gap: 10px;">
-      <div style="display: flex; gap: 10px; width: 100%;">
-        <button type="button" id="btContinuar" class="btn-principal" style="flex: 2;">Ingresar al Dashboard (appModulo1)</button>
-        <button type="button" id="btSalir" class="btn-secundario" style="flex: 1;">Cerrar Sesión</button>
+    <div class="botones-fila">
+      <div class="acciones-sesion">
+        <button type="button" id="btContinuar" class="btn-principal">Ingresar al Dashboard (appModulo1)</button>
+        <button type="button" id="btSalir" class="btn-secundario">Cerrar Sesión</button>
       </div>
-      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario" style="text-align: center; text-decoration: none; background: #4a5568; color: white; border: none; padding: 9px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px;">
+      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario">
         📥 Descargar Registro de Errores (.txt)
       </a>
     </div>

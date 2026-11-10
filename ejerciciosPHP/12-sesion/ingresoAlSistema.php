@@ -119,7 +119,7 @@ function infoDeSesion() {
 <head>
   <meta charset="UTF-8">
   <title>Ingreso al Sistema — Pantalla Intermedia</title>
-  <link rel="stylesheet" href="estiloLogin.css">
+  <link rel="stylesheet" href="estiloLogin.css?v=20261110-css">
 </head>
 <body>
   <!-- Botón para volver al menú principal del sitio (htdocs/index.html) -->
@@ -127,25 +127,25 @@ function infoDeSesion() {
     <a class="btn-volver" href="../../index.html">Volver al menú</a>
   </div>
 
-  <div class="contenedor-card" style="max-width: 580px;">
+  <div class="contenedor-card pantalla-intermedia">
     <h2>¡Bienvenido al Sistema!</h2>
     <p class="subtitulo">Autenticación exitosa — Pantalla intermedia previa al Dashboard</p>
 
     <h2>Sus parámetros de sesión son los siguientes:</h2>
     <?php infoDeSesion(); ?>
 
-    <p style="font-size: 13px; color: #555; margin-top: 15px;">
+    <p class="descripcion-modulo">
       El módulo de trabajo (<b>appModulo1</b>) se encuentra completamente protegido por sesión.
       Seleccione una acción para continuar:
     </p>
 
     <!-- Botones requeridos por el apunte en la página 8 y botón de descarga de errores -->
-    <div class="botones-fila" style="display: flex; flex-direction: column; gap: 10px;">
-      <div style="display: flex; gap: 10px; width: 100%;">
-        <button type="button" id="btAppModulo1" class="btn-principal" style="flex: 2;">Ingresar al Módulo (Dashboard CRUD)</button>
-        <button type="button" id="btSalida" class="btn-secundario" style="flex: 1;">Abandonar Sesión</button>
+    <div class="botones-fila">
+      <div class="acciones-sesion">
+        <button type="button" id="btAppModulo1" class="btn-principal">Ingresar al Módulo (Dashboard CRUD)</button>
+        <button type="button" id="btSalida" class="btn-secundario">Abandonar Sesión</button>
       </div>
-      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario" style="text-align: center; text-decoration: none; background: #4a5568; color: white; border: none; padding: 9px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px;">
+      <a href="descargarErrores.php" id="btDescargarErrores" class="btn-secundario">
         📥 Descargar Registro de Errores (.txt)
       </a>
     </div>

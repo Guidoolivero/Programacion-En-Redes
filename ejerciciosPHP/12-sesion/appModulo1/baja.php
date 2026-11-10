@@ -1,20 +1,36 @@
 <?php
-// ========================================================================================
-// ARCHIVO: appModulo1/baja.php (Protegido por sesión)
-// OBJETIVO: Endpoint AJAX para eliminación de renglón según clave compuesta.
-//
-// PRIMERA LÍNEA: Protección de sesión con include __DIR__ . '/../manejoSesion.inc';
-// ========================================================================================
+include __DIR__ . '/../manejoSesion.inc'; // Primero comprueba la sesión.
+require_once __DIR__ . '/models/Database.php'; // Conexión y registro de errores compartidos.
 
-include __DIR__ . '/../manejoSesion.inc'; // Comprueba la sesión antes de continuar con este pedido.
-
-require_once __DIR__ . '/models/RenglonesModel.php'; // La vista usa el modelo para acceder a MySQL.
-
-$nro = $_POST['nroFactura'] ?? ''; // Lee el primer componente de la clave del registro.
-$cod = $_POST['codArticulo'] ?? ''; // Lee el segundo componente de la clave del registro.
-
-// Vista PHP: llama al modelo y devuelve la respuesta de esta operación.
-$modelo = new RenglonesModel();
+$pdo = Database::getConnection();
+$nroFactura = $_POST['nroFactura'] ?? '';
+$codArticulo = $_POST['codArticulo'] ?? '';
 $traza = '';
-$modelo->eliminarRenglon($nro, $cod, $traza);
+
+// Recibe los datos, valida, ejecuta SQL y devuelve el resultado.
+if (!$pdo) {
+    $traza = "No se pudo conectar a la base de datos.";
+    echo $traza;
+    return;
+}
+
+try {
+    // DELETE: borra solo el renglón que coincide con los dos datos de la clave.
+    $sql = "DELETE FROM renglones_factura WHERE `nro_factura`=:nroFactura AND `cod_articulo`=:codArticulo";
+    $stmt = $pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
+    $traza .= "Preparacion exitosa!\n";
+
+    $stmt->bindParam(':nroFactura', $nroFactura);
+    $stmt->bindParam(':codArticulo', $codArticulo);
+    $traza .= "Binding exitoso!\n";
+
+    $stmt->execute(); // DELETE: ejecuta el borrado definitivo de la fila.
+    $traza .= "Ejecucion exitosa!\n";
+    $traza .= "Baja de renglón $nroFactura / $codArticulo correcta";
+
+} catch (PDOException $e) {
+    Database::logError('Baja: ' . $e->getMessage());
+    $traza .= "\n" . $e->getMessage();
+}
+
 echo $traza;

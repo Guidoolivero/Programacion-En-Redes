@@ -140,12 +140,12 @@ function validarDuplicadoEnFactura() {
     // Marca el campo inválido para impedir enviar el alta.
     campoCodigoArticuloAlta.setCustomValidity("Ese artículo ya está cargado en la misma factura.");
     mensaje.textContent = '⚠️ La factura "' + numeroFactura + '" ya contiene el artículo "' + codigoArticulo + '" (sí podés cargarlo en otra factura).';
-    mensaje.style.display = ""; // Vuelve a mostrar el mensaje de duplicado.
+    mensaje.hidden = false; // Vuelve a mostrar el mensaje de duplicado.
     campoCodigoArticuloAlta.style.borderColor = "#e53e3e"; // Resalta el campo que tiene el error.
   } else {
     campoCodigoArticuloAlta.setCustomValidity(""); // Quita el error personalizado de duplicado.
     mensaje.textContent = ""; // Borra el error cuando la combinación es válida.
-    mensaje.style.display = "none"; // Oculta el mensaje que ya no corresponde.
+    mensaje.hidden = true; // Oculta el mensaje que ya no corresponde.
     campoCodigoArticuloAlta.style.borderColor = ""; // Restaura el borde normal del campo.
   }
 }
@@ -370,7 +370,9 @@ function cerrarVentana(id) {
 function mostrarRespuestaServidor(texto) {
   alert(texto);
   abrirVentana("ventanaModalRespuesta");
-  document.getElementById("contenidoModalRespuesta").innerHTML = texto;
+  var contenido = document.getElementById("contenidoModalRespuesta");
+  contenido.textContent = ""; // Vacía la respuesta anterior (equivale a empty() de jQuery).
+  contenido.append(texto); // append agrega el texto sin interpretar etiquetas HTML.
 }
 
 // Cierra el modal de alta.

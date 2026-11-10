@@ -22,6 +22,25 @@ h1 { text-align: center; }
   transition: background 0.2s ease;
 }
 .btn-volver:hover { background: #555; }
+.btn-volver.btn-errores { background: #4a5568; }
+
+.info-sesion {
+  background: #e6fffa;
+  border: 1px solid #38b2ac;
+  color: #234e52;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#contadorSesion { background: #319795; color: #fff; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+#identificativoSesion { font-size: 12px; }
+.aviso-sesion { font-size: 12px; color: #2c7a7b; }
 
 /* Barra de controles con Flexbox (alineación responsiva) */
 .controles {
@@ -50,6 +69,7 @@ h1 { text-align: center; }
   transition: all 0.2s ease;
 }
 .controles button:hover { background: #e2e8f0; }
+#btCierraSesion { background: #e53e3e; color: white; border-color: #c53030; font-weight: bold; }
 
 /* La tabla usa el ancho disponible; en pantallas chicas se transforma en fichas. */
 .tabla-wrap { max-width: 100%; border: 1px solid #ccc; }
@@ -121,6 +141,10 @@ footer { text-align: center; margin-top: 20px; background: #f5f5dc; padding: 10p
   margin-top: 6px;
 }
 .modal-box button[type="submit"]:disabled { background: #aaa; cursor: not-allowed; }
+#msgErrorCodArtAlta { color: #c53030; font-size: 12px; font-weight: bold; margin-top: 4px; }
+
+#ventanaModalPdf .modal-box { max-width: 750px; height: 80vh; }
+#iframePdf { width: 100%; height: calc(100% - 40px); border: none; }
 
 /* Modal específico de respuesta del servidor (Págs. 10 y 11) */
 #ventanaModalRespuesta .modal-box { max-width: 480px; background: #fff; }

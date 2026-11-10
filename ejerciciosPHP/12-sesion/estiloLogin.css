@@ -121,12 +121,39 @@ h2 {
 
 .botones-fila {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-top: 20px;
 }
 .botones-fila button {
   flex: 1;
 }
+
+.acciones-sesion {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.acciones-sesion .btn-principal { flex: 2; }
+
+#btDescargarErrores {
+  text-align: center;
+  text-decoration: none;
+  background: #4a5568;
+  color: white;
+  border: none;
+  padding: 9px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pantalla-intermedia { max-width: 580px; }
+.descripcion-modulo { font-size: 13px; color: #555; margin-top: 15px; }
 
 .info-box {
   background: #eef4fb;

@@ -1,19 +1,28 @@
 <?php
-// ========================================================================================
-// ARCHIVO: appModulo1/traeBinario.php (Protegido por sesión - Pág. 23 del apunte CRUD)
-// OBJETIVO: Emite el JSON con el PDF codificado en Base64 para visualización en modal.
-//
-// PRIMERA LÍNEA: Protección de sesión con include __DIR__ . '/../manejoSesion.inc';
-// ========================================================================================
+include __DIR__ . '/../manejoSesion.inc'; // Primero comprueba la sesión.
+require_once __DIR__ . '/models/Database.php'; // Conexión y registro de errores compartidos.
 
-include __DIR__ . '/../manejoSesion.inc'; // Comprueba la sesión antes de continuar con este pedido.
-
-require_once __DIR__ . '/models/RenglonesModel.php';
-
-$nro = $_GET['nroFactura'] ?? ($_POST['nroFactura'] ?? ''); // Toma la factura de la URL; si no vino, prueba en POST.
-$cod = $_GET['codArticulo'] ?? ($_POST['codArticulo'] ?? ''); // Toma el artículo de la URL; si no vino, prueba en POST.
-
-// Vista del PDF: entrega el binario codificado en Base64 para el visor.
+$pdo = Database::getConnection();
 header('Content-Type: application/json; charset=utf-8');
-$modelo = new RenglonesModel();
-echo json_encode(['documentoPdf' => $modelo->getPdfBase64($nro, $cod)], JSON_INVALID_UTF8_SUBSTITUTE);
+$nroFactura = $_GET['nroFactura'] ?? ($_POST['nroFactura'] ?? '');
+$codArticulo = $_GET['codArticulo'] ?? ($_POST['codArticulo'] ?? '');
+$pdf = null;
+if ($pdo) {
+
+    try {
+        // SELECT PDF: busca únicamente el binario del renglón elegido.
+        $stmt = $pdo->prepare("SELECT `documentoPdf` FROM renglones_factura WHERE `nro_factura` = :nro AND `cod_articulo` = :cod");
+        $stmt->bindParam(':nro', $nroFactura);
+        $stmt->bindParam(':cod', $codArticulo);
+        $stmt->execute(); // Ejecuta el SELECT del archivo PDF.
+        $fila = $stmt->fetch(); // Obtiene una sola fila de la respuesta SQL.
+        if ($fila && !empty($fila['documentoPdf'])) {
+            $pdf = base64_encode($fila['documentoPdf']); // Convierte el binario a texto Base64 para poder enviarlo en JSON.
+        }
+
+    } catch (PDOException $e) {
+        Database::logError('traeBinario: ' . $e->getMessage());
+
+    }
+}
+echo json_encode(['documentoPdf'=>$pdf], JSON_INVALID_UTF8_SUBSTITUTE);

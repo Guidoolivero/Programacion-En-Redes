@@ -32,7 +32,6 @@ const rutas = [
 for (const archivo of ['manejoSesion.inc', 'ingresoAlSistema.php', ...rutas.map(([ruta]) => ruta)]) {
     php.writeFile('/ej12/' + archivo, fs.readFileSync(path.join(raiz, archivo)));
 }
-php.writeFile('/ej12/appModulo1/index.html', fs.readFileSync(path.join(raiz, 'appModulo1/index.html')));
 // No se copian configuraciones ni credenciales reales al entorno de pruebas.
 php.writeFile('/ej12/datosConexionBase.php', '<?php');
 

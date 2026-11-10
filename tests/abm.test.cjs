@@ -34,7 +34,7 @@ async function abrirApp(t) {
     const url = new URL(request.url());
     const nombre = url.pathname.substring(1);
     if (!nombre) {
-      const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+      const html = fs.readFileSync(path.join(root, 'index.php'), 'utf8').replace(/^<\?php[\s\S]*?\?>\s*/, '');
       return route.fulfill({ contentType: 'text/html', body: html });
     }
     if (['abm.js', 'jquery.js', 'estilo.css'].includes(nombre)) {
@@ -166,7 +166,8 @@ test('Modificar completa la ficha, valida campos y envía los datos originales d
   await page.locator('#formArticulosEntDescripcionModi').fill('Modificado');
   await page.locator('#btEnvioFormModi').click();
   await expect(page.locator('#ventanaModalFormularioModi')).toBeHidden();
-  await expect(page.locator('#contenidoModalRespuesta')).toHaveText('Operación procesada');
+  await expect(page.locator('#contenidoModalRespuesta')).toHaveText('<p>Operación procesada</p>');
+  await expect(page.locator('#contenidoModalRespuesta p')).toHaveCount(0);
   const modi = estado.peticiones.find(p => p.nombre === 'modi.php');
   for (const texto of ['1001', 'ART-02', 'Modificado', 'name="documentoPdf"']) assert(modi.body.includes(texto), texto);
   assert.deepEqual(estado.errores, []);
@@ -183,7 +184,7 @@ test('Baja requiere confirmación, envía la clave compuesta y actualiza la tabl
   await expect(page.locator('#tbDatos tr')).toHaveCount(1);
   const baja = estado.peticiones.find(p => p.nombre === 'baja.php');
   assert(baja.body.includes('1001') && baja.body.includes('ART-02'));
-  await expect(page.locator('#contenidoModalRespuesta')).toHaveText('Operación procesada');
+  await expect(page.locator('#contenidoModalRespuesta')).toHaveText('<p>Operación procesada</p>');
   assert.deepEqual(estado.errores, []);
 });
 
