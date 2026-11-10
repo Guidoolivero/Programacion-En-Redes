@@ -5,7 +5,7 @@ require_once __DIR__ . '/Database.php';
 
 class RenglonesModel {
     private $pdo; // Guarda la conexión del modelo con MySQL.
-    private $cacheColumnas = null; // Conserva el mapa de columnas durante esta petición.
+    private $importeCalculado = null; // Recuerda si MySQL calcula el importe automáticamente.
 
     // Al crear el modelo, obtiene su conexión con MySQL.
     public function __construct() {
@@ -17,167 +17,18 @@ class RenglonesModel {
         return $this->pdo; // Entrega la conexión al código que la solicite.
     }
 
-    /**
-     * Busca una columna disponible dentro de $cols que AÚN NO haya sido asignada en $usadas.
-     * Al registrar cada columna encontrada en $usadas, es matemáticamente imposible que dos
-     * campos lógicos (por ejemplo 'desc' y 'um') apunten a la misma columna física en SQL.
-     */
-    private function buscarColumna($cols, $candidatos, &$usadas, $permitirParcialCorto = false) {
-        // 1. Coincidencia EXACTA (insensible a mayúsculas/minúsculas)
-        foreach ($candidatos as $cand) {
-            foreach ($cols as $c) {
-                if (in_array($c, $usadas, true)) continue; // Salta una columna que ya fue asignada a otro campo.
-                if (strcasecmp($c, $cand) === 0) { // Compara los nombres sin distinguir mayúsculas.
-                    $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                    return $c; // Devuelve el nombre real que encontró.
-                }
-            }
+    // Solo consulta la característica que puede variar en tu tabla.
+    private function importeEsCalculado() {
+        if ($this->importeCalculado === null) {
+            $columna = $this->pdo->query("SHOW COLUMNS FROM renglones_factura LIKE 'importe_renglon'")->fetch(PDO::FETCH_ASSOC);
+            $this->importeCalculado = strpos(strtolower($columna['Extra'] ?? ''), 'generated') !== false;
         }
-
-        // 2. Coincidencia por palabra/token exacto separando snake_case y camelCase
-        //    (ej: 'id_um' o 'codUm' tienen el token 'um', pero 'documento_pdf' o 'numero' NO)
-        foreach ($candidatos as $cand) {
-            $candLower = strtolower($cand); // Normaliza el nombre candidato para compararlo.
-            foreach ($cols as $c) {
-                if (in_array($c, $usadas, true)) continue; // Salta una columna que ya fue asignada a otro campo.
-                // Separa palabras de nombres como codUm para poder compararlas.
-                $separado = preg_replace('/([a-z])([A-Z])/', '$1_$2', $c);
-                // Divide el nombre de columna en palabras.
-                $tokens = preg_split('/[^a-z0-9]+/i', strtolower($separado), -1, PREG_SPLIT_NO_EMPTY);
-                if (in_array($candLower, $tokens, true)) { // Busca una palabra completa, no solo una parte del nombre.
-                    $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                    return $c; // Devuelve el nombre real que encontró.
-                }
-            }
-        }
-
-        // 3. Coincidencia parcial de subcadena sólo sobre columnas libres
-        foreach ($candidatos as $cand) {
-            if ($permitirParcialCorto || strlen($cand) > 3) { // Limita las coincidencias parciales de nombres muy cortos.
-                foreach ($cols as $c) {
-                    if (in_array($c, $usadas, true)) continue; // Salta una columna que ya fue asignada a otro campo.
-                    if (stripos($c, $cand) !== false) { // Busca el candidato dentro del nombre sin distinguir mayúsculas.
-                        $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                        return $c; // Devuelve el nombre real que encontró.
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Inspecciona los metadatos reales de SHOW COLUMNS FROM renglones_factura
-     * evitando reutilizar columnas, pisar claves auto_increment o insertar en columnas generadas.
-     */
-    private function detectarColumnas() { // private: solo se usa desde esta clase.
-        if ($this->cacheColumnas !== null) { // Si ya detectó la estructura, no vuelve a consultar MySQL.
-            return $this->cacheColumnas; // Devuelve el mapa de nombres reales de las columnas.
-        }
-
-        // SHOW COLUMNS obtiene estructura y tipos, no las facturas.
-        $metaFilas = $this->pdo->query("SHOW COLUMNS FROM renglones_factura")->fetchAll(PDO::FETCH_ASSOC);
-        $cols = []; // Lista de nombres reales de columnas.
-        $tipos = []; // Relaciona cada nombre de columna con su tipo de dato.
-        $extras = []; // Guarda características como auto_increment o generated.
-        $usadas = []; // Recuerda qué columnas ya se asignaron a un dato.
-
-        foreach ($metaFilas as $m) { // Revisa una columna de la estructura en cada vuelta.
-            $campo = $m['Field']; // Lee el nombre de la columna.
-            $tipo  = strtolower($m['Type'] ?? ''); // Lee su tipo y lo pasa a minúsculas; ?? evita un valor ausente.
-            $extra = strtolower($m['Extra'] ?? ''); // Lee sus características adicionales.
-
-            $cols[] = $campo; // Agrega el nombre a la lista de columnas.
-            $tipos[$campo] = $tipo; // Guarda el tipo usando el nombre como clave.
-            $extras[$campo] = $extra; // Guarda las características usando el nombre como clave.
-
-            // Reservar columnas ID autoincrementales para no confundirlas con datos del formulario
-            if (strpos($extra, 'auto_increment') !== false || in_array(strtolower($campo), ['id', 'id_renglon'], true)) {
-                $usadas[] = $campo; // Reserva el ID para no confundirlo con otro campo.
-            }
-        }
-
-        // 1. Detectar primero columna binaria / PDF y reservarla
-        $colPdf = $this->buscarColumna($cols, [
-            'documentoPdf', 'documento_pdf', 'archivo_pdf', 'pdf_binario', 'pdf', 'binario', 'documento', 'archivo'
-        ], $usadas);
-        if ($colPdf === null) { // Si no reconoció el PDF por nombre, prueba por tipo binario.
-            foreach ($cols as $c) {
-                if (!in_array($c, $usadas, true) && (strpos($tipos[$c], 'blob') !== false || strpos($tipos[$c], 'binary') !== false)) {
-                    $colPdf = $c; // Esta columna libre será la del archivo PDF.
-                    $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                    break;
-                }
-            }
-        }
-
-        // 2. Detectar columnas principales inequívocas
-        $colNro   = $this->buscarColumna($cols, ['nroFactura', 'nro_factura', 'numero_factura', 'num_factura', 'id_factura', 'factura', 'nro', 'numero'], $usadas); // Busca cuál es la columna real del número de factura.
-        $colFecha = $this->buscarColumna($cols, ['fechaFactura', 'fecha_factura', 'fec_factura', 'fecha'], $usadas); // Busca la columna real de fecha entre los nombres posibles.
-        if ($colFecha === null) { // Si no reconoció la fecha por nombre, prueba por tipo date.
-            foreach ($cols as $c) {
-                if (!in_array($c, $usadas, true) && strpos($tipos[$c], 'date') !== false) {
-                    $colFecha = $c; // Esta columna libre será la fecha de la factura.
-                    $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                    break;
-                }
-            }
-        }
-
-        $colCod  = $this->buscarColumna($cols, ['codArticulo', 'cod_articulo', 'codigo_articulo', 'cod_art', 'codigo_art', 'id_articulo', 'id_art', 'articulo', 'art'], $usadas); // Busca la columna real del código de artículo.
-        $colDesc = $this->buscarColumna($cols, ['descripcion', 'descripcion_articulo', 'detalle', 'concepto', 'desc'], $usadas); // Busca la columna real de descripción.
-        $colCant = $this->buscarColumna($cols, ['cantidad', 'cant'], $usadas); // Busca la columna real de cantidad.
-        $colPrec = $this->buscarColumna($cols, ['precioUnitario', 'precio_unitario', 'precio_unit', 'p_unitario', 'precio'], $usadas); // Busca la columna real de precio unitario.
-        $colImp  = $this->buscarColumna($cols, ['importeRenglon', 'importe_renglon', 'importe_total', 'subtotal', 'importe', 'total'], $usadas); // Busca la columna real de importe.
-
-        // 3. Detectar Unidad de Medida únicamente entre las columnas que quedaron libres
-        $colUm = $this->buscarColumna($cols, [
-            'unidadMedida', 'unidad_medida', 'codUm', 'cod_um', 'codigo_um',
-            'id_unidad', 'unidad_id', 'id_um', 'um_id', 'fk_unidad', 'fk_um',
-            'u_medida', 'u_med', 'medida', 'cod_medida', 'id_medida',
-            'udm', 'unid', 'um', 'unidad'
-        ], $usadas, true);
-
-        // Si aún no coincidió por nombre pero queda alguna columna libre (no BLOB ni generada), usarla como UM
-        if ($colUm === null) { // Último recurso: busca una columna libre para la unidad.
-            foreach ($cols as $c) {
-                if (in_array($c, $usadas, true)) continue; // Salta una columna que ya fue asignada a otro campo.
-                // Una columna binaria no sirve como unidad de medida.
-                if (strpos($tipos[$c], 'blob') !== false || strpos($tipos[$c], 'binary') !== false) continue;
-                // No usa una columna calculada como unidad de medida.
-                if (strpos($extras[$c], 'generated') !== false) continue;
-                $colUm = $c; // Conserva el nombre elegido para la unidad.
-                $usadas[] = $c; // Reserva la columna para que no vuelva a elegirse.
-                break;
-            }
-        }
-
-        // Indica si la base espera un ID numérico para la unidad.
-        $umEsInt = ($colUm !== null && isset($tipos[$colUm]) && preg_match('/int/i', $tipos[$colUm]));
-        // Indica si MySQL calcula el importe automáticamente.
-        $impGenerada = ($colImp !== null && isset($extras[$colImp]) && strpos($extras[$colImp], 'generated') !== false);
-
-        $this->cacheColumnas = [ // Arma el mapa que luego usarán SELECT, INSERT, UPDATE y DELETE.
-            'nro'          => $colNro,
-            'fecha'        => $colFecha,
-            'cod'          => $colCod,
-            'desc'         => $colDesc,
-            'um'           => $colUm,
-            'cant'         => $colCant,
-            'prec'         => $colPrec,
-            'imp'          => $colImp,
-            'pdf'          => $colPdf, // Nombre real de la columna donde queda el binario del PDF.
-            'um_es_int'    => $umEsInt,
-            'imp_generada' => $impGenerada,
-        ];
-
-        return $this->cacheColumnas; // Devuelve el mapa de nombres reales de las columnas.
+        return $this->importeCalculado;
     }
 
     /**
      * Construye mapas de conversión entre id numérico, código ('UN', 'MT') y descripción
-     * leyendo la tabla unidades_medida para compatibilidad total (FK entera o VARCHAR).
+     * leyendo la tabla unidades_medida para mostrar siempre el código.
      */
     private function obtenerInfoUnidades() {
         $mapaMostrar = []; // Cualquier valor en BD -> código para mostrar/seleccionar en frontend
@@ -203,37 +54,6 @@ class RenglonesModel {
     }
 
     /**
-     * Convierte el valor de unidadMedida enviado por el formulario ('UN', 'MT', etc.)
-     * al tipo que espera la columna real en renglones_factura (ID numérico si es INT, o código si es VARCHAR).
-     */
-    private function resolverValorUmParaBD($umRecibida, $umEsInt) {
-        $umStr = trim((string)$umRecibida); // Normaliza la unidad que llegó del formulario.
-        if (!$umEsInt || $umStr === '' || ctype_digit($umStr)) {
-            return $umStr;
-        }
-
-        $filas = $this->getUnidades(); // Lee la tabla auxiliar de unidades.
-        foreach ($filas as $u) {
-            $vals    = array_values($u); // Permite consultar los valores también por posición.
-            // Intenta reconocer el identificador numérico de la unidad.
-            $idVal   = $u['id'] ?? $u['id_unidad'] ?? $u['id_um'] ?? ($vals[0] ?? null);
-            // Intenta reconocer el código de unidad, por ejemplo UN.
-            $codVal  = $u['cod_um'] ?? $u['codigo'] ?? $u['codUm'] ?? $u['unidad_medida'] ?? '';
-            // Intenta reconocer la descripción visible de la unidad.
-            $descVal = $u['descripcion'] ?? $u['descripcionUm'] ?? $u['nombre'] ?? '';
-
-            if (
-                ($codVal !== '' && strcasecmp((string)$codVal, $umStr) === 0) ||
-                ($descVal !== '' && strcasecmp((string)$descVal, $umStr) === 0)
-            ) {
-                return $idVal; // Devuelve el ID que corresponde al código recibido.
-            }
-        }
-
-        return $umStr;
-    }
-
-    /**
      * Verifica si la combinación (nroFactura + codArticulo) ya existe en renglones_factura.
      * Permite repetir el mismo codArticulo en distintas facturas y varios artículos en una misma factura.
      */
@@ -244,11 +64,8 @@ class RenglonesModel {
         if ($nroLimpio === '' || $codLimpio === '') return false; // Normaliza el número antes de buscar duplicados.
 
         try {
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
-            if (empty($c['nro']) || empty($c['cod'])) return false;
-
             // Cuenta coincidencias de la clave factura + artículo.
-            $sql = "SELECT COUNT(*) FROM renglones_factura WHERE LOWER(TRIM(CAST(`{$c['nro']}` AS CHAR))) = LOWER(:nro) AND LOWER(TRIM(CAST(`{$c['cod']}` AS CHAR))) = LOWER(:cod)";
+            $sql = "SELECT COUNT(*) FROM renglones_factura WHERE LOWER(TRIM(CAST(`nro_factura` AS CHAR))) = LOWER(:nro) AND LOWER(TRIM(CAST(`cod_articulo` AS CHAR))) = LOWER(:cod)";
             $stmt = $this->pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
             $stmt->bindValue(':nro', $nroLimpio); // Asocia el número de factura al parámetro de la consulta.
             $stmt->bindValue(':cod', $codLimpio); // Asocia el código de artículo al parámetro de la consulta.
@@ -276,31 +93,21 @@ class RenglonesModel {
     public function getRenglones($filtros = [], $orden = 'nroFactura') {
         if (!$this->pdo) return ['renglones' => [], 'cantidad' => 0];
 
-        $camposPermitidos = [ // Solo estos campos pueden usarse para ordenar.
-            'nroFactura', 'codArticulo', 'unidadMedida',
-            'descripcion', 'fechaFactura', 'cantidad',
-            'precioUnitario', 'importeRenglon'
+        $mapaOrden = [ // Campo del navegador => columna real de MySQL.
+            'nroFactura' => 'nro_factura', 'codArticulo' => 'cod_articulo',
+            'unidadMedida' => 'cod_um', 'descripcion' => 'descripcion',
+            'fechaFactura' => 'fecha_factura', 'cantidad' => 'cantidad',
+            'precioUnitario' => 'precio_unitario', 'importeRenglon' => 'importe_renglon',
         ];
-        if (!in_array($orden, $camposPermitidos, true)) { // Un orden desconocido se reemplaza por nroFactura.
+        if (!in_array($orden, array_keys($mapaOrden), true)) { // Un orden desconocido usa el valor inicial.
             $orden = 'nroFactura';
         }
 
         try {
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
             $infoUm = $this->obtenerInfoUnidades();
             $mapaUmTexto = $infoUm['mapaMostrar'];
 
-            $mapaOrden = [ // Relaciona el campo del navegador con la columna de MySQL.
-                'nroFactura'     => $c['nro'],
-                'codArticulo'    => $c['cod'],
-                'unidadMedida'   => $c['um'] ?? $c['nro'],
-                'descripcion'    => $c['desc'],
-                'fechaFactura'   => $c['fecha'],
-                'cantidad'       => $c['cant'],
-                'precioUnitario' => $c['prec'],
-                'importeRenglon' => $c['imp'] ?? $c['nro'],
-            ];
-            $colOrden = $mapaOrden[$orden] ?? $c['nro'];
+            $colOrden = $mapaOrden[$orden];
 
             $condiciones = []; // Acumula las condiciones que formarán el WHERE.
             $params = []; // Guarda los valores que se vincularán a los parámetros SQL.
@@ -312,15 +119,15 @@ class RenglonesModel {
             $fDesc  = trim((string)($filtros['f_descripcion'] ?? '')); // Lee el texto de búsqueda de la descripción.
             $fFecha = trim((string)($filtros['f_fechaFactura'] ?? '')); // Lee la fecha usada como filtro.
 
-            if ($fNro !== '' && $c['nro']) {
-                $condiciones[] = "LOWER(CAST(`{$c['nro']}` AS CHAR)) LIKE LOWER(:f_nro)";
+            if ($fNro !== '') {
+                $condiciones[] = "LOWER(CAST(`nro_factura` AS CHAR)) LIKE LOWER(:f_nro)";
                 $params[':f_nro'] = '%' . $fNro . '%'; // Los signos % permiten buscar una coincidencia parcial.
             }
-            if ($fCod !== '' && $c['cod']) {
-                $condiciones[] = "LOWER(CAST(`{$c['cod']}` AS CHAR)) LIKE LOWER(:f_cod)";
+            if ($fCod !== '') {
+                $condiciones[] = "LOWER(CAST(`cod_articulo` AS CHAR)) LIKE LOWER(:f_cod)";
                 $params[':f_cod'] = '%' . $fCod . '%'; // Busca el texto del código dentro del valor de la columna.
             }
-            if ($fUm !== '' && $c['um']) {
+            if ($fUm !== '') {
                 $equivalencias = [strtolower($fUm)]; // Permite filtrar una unidad por ID, código o descripción.
                 foreach ($infoUm['filas'] as $u) {
                     $vals    = array_values($u); // Permite consultar los valores también por posición.
@@ -350,28 +157,26 @@ class RenglonesModel {
                     $phUm[] = $key;
                     $params[$key] = $eqVal;
                 }
-                $condiciones[] = "LOWER(TRIM(CAST(`{$c['um']}` AS CHAR))) IN (" . implode(', ', $phUm) . ")";
+                $condiciones[] = "LOWER(TRIM(CAST(`cod_um` AS CHAR))) IN (" . implode(', ', $phUm) . ")";
             }
-            if ($fDesc !== '' && $c['desc']) {
-                $condiciones[] = "LOWER(CAST(`{$c['desc']}` AS CHAR)) LIKE LOWER(:f_desc)";
+            if ($fDesc !== '') {
+                $condiciones[] = "LOWER(CAST(`descripcion` AS CHAR)) LIKE LOWER(:f_desc)";
                 $params[':f_desc'] = '%' . $fDesc . '%'; // Busca la descripción aunque el texto esté en el medio.
             }
-            if ($fFecha !== '' && $c['fecha']) {
-                $condiciones[] = "CAST(`{$c['fecha']}` AS CHAR) LIKE :f_fecha";
+            if ($fFecha !== '') {
+                $condiciones[] = "CAST(`fecha_factura` AS CHAR) LIKE :f_fecha";
                 $params[':f_fecha'] = $fFecha . '%'; // El prefijo de fecha permite comparar también fechas con hora.
             }
 
-            $selUm  = $c['um']  ? "`{$c['um']}` AS unidadMedida" : "'' AS unidadMedida";
-            $selImp = $c['imp'] ? "`{$c['imp']}` AS importeRenglon" : "(`{$c['cant']}` * `{$c['prec']}`) AS importeRenglon";
-
-            // Arma el SELECT; AS da a los resultados los nombres usados por JavaScript.
-            $sql = "SELECT `{$c['nro']}` AS nroFactura, `{$c['fecha']}` AS fechaFactura, `{$c['cod']}` AS codArticulo, `{$c['desc']}` AS descripcion, $selUm, `{$c['cant']}` AS cantidad, `{$c['prec']}` AS precioUnitario, $selImp FROM renglones_factura";
+            // AS conserva los nombres que recibe abm.js.
+            $sql = "SELECT nro_factura AS nroFactura, fecha_factura AS fechaFactura,
+                cod_articulo AS codArticulo, descripcion, cod_um AS unidadMedida,
+                cantidad, precio_unitario AS precioUnitario, importe_renglon AS importeRenglon
+                FROM renglones_factura";
             if (!empty($condiciones)) {
                 $sql .= " WHERE " . implode(' AND ', $condiciones); // Une con AND todos los filtros que se completaron.
             }
-            if ($colOrden) {
-                $sql .= " ORDER BY `$colOrden` ASC"; // Agrega la columna de ordenamiento en orden ascendente.
-            }
+            $sql .= " ORDER BY `$colOrden` ASC"; // El nombre proviene del mapa permitido, no del usuario.
 
             $stmt = $this->pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
             $stmt->execute($params); // SELECT: ejecuta la búsqueda con los valores de los filtros.
@@ -433,44 +238,21 @@ class RenglonesModel {
                 return false;
             }
 
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
-            // Convierte la unidad al código o ID que espera la columna.
-            $valorUmBD = $this->resolverValorUmParaBD($um, $c['um_es_int']);
-
-            // Construcción dinámica garantizando unicidad absoluta de columnas en INSERT
-            $mapaCampos = [ // Relaciona columna, parámetro y valor de cada campo del INSERT.
-                ['col' => $c['nro'],   'ph' => ':nroFactura',     'val' => $nro],
-                ['col' => $c['fecha'], 'ph' => ':fechaFactura',   'val' => $fecha],
-                ['col' => $c['cod'],   'ph' => ':codArticulo',    'val' => $cod],
-                ['col' => $c['desc'],  'ph' => ':descripcion',    'val' => $desc],
-                ['col' => $c['um'],    'ph' => ':unidadMedida',   'val' => $valorUmBD],
-                ['col' => $c['cant'],  'ph' => ':cantidad',       'val' => $cant],
-                ['col' => $c['prec'],  'ph' => ':precioUnitario', 'val' => $precio],
+            // Columnas y parámetros fijos: son los nombres reales de tu tabla.
+            $columnas = 'nro_factura, fecha_factura, cod_articulo, descripcion, cod_um, cantidad, precio_unitario';
+            $valores = ':nroFactura, :fechaFactura, :codArticulo, :descripcion, :unidadMedida, :cantidad, :precioUnitario';
+            $binds = [
+                ':nroFactura' => $nro, ':fechaFactura' => $fecha, ':codArticulo' => $cod,
+                ':descripcion' => $desc, ':unidadMedida' => $um, ':cantidad' => $cant,
+                ':precioUnitario' => $precio,
             ];
-
-            // Sólo incluir importe si la columna existe y NO es generada automáticamente por MySQL
-            // Solo escribe el importe si MySQL no lo calcula automáticamente.
-            if (!empty($c['imp']) && empty($c['imp_generada'])) {
-                $mapaCampos[] = ['col' => $c['imp'], 'ph' => ':importeRenglon', 'val' => $importe];
+            // Una columna generada no se incluye en el INSERT.
+            if (!$this->importeEsCalculado()) {
+                $columnas .= ', importe_renglon';
+                $valores .= ', :importeRenglon';
+                $binds[':importeRenglon'] = $importe;
             }
-
-            $colsSql = []; // Nombres de columnas que se incluirán en el INSERT.
-            $phsSql  = []; // Marcadores SQL, como :nroFactura, que recibirán los valores.
-            $binds   = []; // Valores que se vincularán a los marcadores SQL.
-            $colsVistas = []; // Evita repetir una columna al construir el INSERT.
-
-            foreach ($mapaCampos as $item) {
-                $nombreCol = $item['col'];
-                if (!empty($nombreCol) && !isset($colsVistas[$nombreCol])) {
-                    $colsVistas[$nombreCol] = true;
-                    $colsSql[] = "`$nombreCol`";
-                    $phsSql[]  = $item['ph'];
-                    $binds[$item['ph']] = $item['val'];
-                }
-            }
-
-            // INSERT: construye el alta de un renglón nuevo.
-            $sql = "INSERT INTO renglones_factura (" . implode(', ', $colsSql) . ") VALUES (" . implode(', ', $phsSql) . ")";
+            $sql = "INSERT INTO renglones_factura ($columnas) VALUES ($valores)";
             $stmt = $this->pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
             $traza .= "\nPreparacion exitosa!";
 
@@ -483,30 +265,7 @@ class RenglonesModel {
             $traza .= "\nEjecucion exitosa!";
             $traza .= "\nAlta de renglón $nro / $cod correcta";
 
-            // Manejo de archivo PDF binario si se envió
-            if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
-                try {
-                    if ($c['pdf']) {
-                        // Lee el contenido binario del archivo temporal que recibió PHP.
-                        $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
-                        // UPDATE PDF: prepara el guardado del binario en la fila indicada.
-                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `{$c['pdf']}` = :doc WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
-                        //PDO::PARAM_LOB: Es el punto clave. 
-                        //Le indica a PDO que el contenido de $contenidoPdf es un LOB (Large Object / Objeto Grande)
-                        //bindParam() es un método de PDO en PHP
-                        //no guarda el valor actual de la variable, sino una referencia en memoria a ella. 
-                        //El valor real no se lee hasta el momento exacto en que llamas a $stmt->execute().
-                        // PDO::PARAM_LOB indica que se envía contenido binario.
-                        $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
-                        $stmtPdf->bindParam(':nro', $nro);
-                        $stmtPdf->bindParam(':cod', $cod);
-                        $stmtPdf->execute(); // Ejecuta el UPDATE que guarda o reemplaza el documento PDF.
-                        $traza .= "\nDocumento PDF actualizado correctamente.";
-                    }
-                } catch (Exception $ePdf) {
-                    Database::logError("Error guardando PDF alta: " . $ePdf->getMessage());
-                }
-            }
+            $this->guardarPdf($nro, $cod, $archivoPdf, $traza, 'Error guardando PDF alta: ');
 
             return true;
         } catch (PDOException $e) {
@@ -536,44 +295,20 @@ class RenglonesModel {
         $traza .= "nroFactura: $nro / codArticulo: $cod\n";
 
         try {
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
-            // Convierte la unidad al código o ID que espera la columna.
-            $valorUmBD = $this->resolverValorUmParaBD($um, $c['um_es_int']);
-
-            $mapaSets = [ // Define qué campos pueden cambiar en el UPDATE.
-                ['col' => $c['fecha'], 'ph' => ':fechaFactura',   'val' => $fecha],
-                ['col' => $c['desc'],  'ph' => ':descripcion',    'val' => $desc],
-                ['col' => $c['um'],    'ph' => ':unidadMedida',   'val' => $valorUmBD],
-                ['col' => $c['cant'],  'ph' => ':cantidad',       'val' => $cant],
-                ['col' => $c['prec'],  'ph' => ':precioUnitario', 'val' => $precio],
+            $cambios = 'fecha_factura=:fechaFactura, descripcion=:descripcion,
+                cod_um=:unidadMedida, cantidad=:cantidad, precio_unitario=:precioUnitario';
+            $binds = [
+                ':fechaFactura' => $fecha, ':descripcion' => $desc, ':unidadMedida' => $um,
+                ':cantidad' => $cant, ':precioUnitario' => $precio,
+                ':nroFactura' => $nro, ':codArticulo' => $cod,
             ];
-
-            // Solo escribe el importe si MySQL no lo calcula automáticamente.
-            if (!empty($c['imp']) && empty($c['imp_generada'])) {
-                $mapaSets[] = ['col' => $c['imp'], 'ph' => ':importeRenglon', 'val' => $importe];
+            // Si MySQL calcula el importe, solo se actualizan cantidad y precio.
+            if (!$this->importeEsCalculado()) {
+                $cambios .= ', importe_renglon=:importeRenglon';
+                $binds[':importeRenglon'] = $importe;
             }
-
-            $setsSql = [];
-            $binds   = []; // Valores que se vincularán a los marcadores SQL.
-            $colsVistas = [
-                $c['nro'] => true,
-                $c['cod'] => true,
-            ];
-
-            foreach ($mapaSets as $item) {
-                $nombreCol = $item['col'];
-                if (!empty($nombreCol) && !isset($colsVistas[$nombreCol])) {
-                    $colsVistas[$nombreCol] = true;
-                    $setsSql[] = "`$nombreCol`=" . $item['ph'];
-                    $binds[$item['ph']] = $item['val'];
-                }
-            }
-
-            $binds[':nroFactura']  = $nro; // La factura identifica la fila; no se cambia en el SET.
-            $binds[':codArticulo'] = $cod; // El artículo completa la clave del registro que se modifica.
-
-            // UPDATE: arma los cambios y limita la fila por factura + artículo.
-            $sql = "UPDATE renglones_factura SET " . implode(', ', $setsSql) . " WHERE `{$c['nro']}`=:nroFactura AND `{$c['cod']}`=:codArticulo";
+            // La factura y el artículo identifican la fila que se modifica.
+            $sql = "UPDATE renglones_factura SET $cambios WHERE nro_factura=:nroFactura AND cod_articulo=:codArticulo";
             $stmt = $this->pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
             $traza .= "\nPreparacion exitosa!";
 
@@ -589,31 +324,29 @@ class RenglonesModel {
             $traza .= "\nEjecucion exitosa!";
             $traza .= "\nModificacion de renglón $nro / $cod correcta";
 
-            // Manejo de archivo PDF binario si se envió
-            if ($archivoPdf && isset($archivoPdf['tmp_name']) && !empty($archivoPdf['name'])) {
-                try {
-                    if ($c['pdf']) {
-                        // Lee el contenido binario del archivo temporal que recibió PHP.
-                        $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
-                        // UPDATE PDF: prepara el guardado del binario en la fila indicada.
-                        $stmtPdf = $this->pdo->prepare("UPDATE renglones_factura SET `{$c['pdf']}` = :doc WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
-                        // PDO::PARAM_LOB indica que se envía contenido binario.
-                        $stmtPdf->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB);
-                        $stmtPdf->bindParam(':nro', $nro);
-                        $stmtPdf->bindParam(':cod', $cod);
-                        $stmtPdf->execute(); // Ejecuta el UPDATE que guarda o reemplaza el documento PDF.
-                        $traza .= "\nDocumento PDF actualizado correctamente.";
-                    }
-                } catch (Exception $ePdf) {
-                    Database::logError("Error actualizando PDF modi: " . $ePdf->getMessage());
-                }
-            }
+            $this->guardarPdf($nro, $cod, $archivoPdf, $traza, 'Error actualizando PDF modi: ');
 
             return true;
         } catch (PDOException $e) {
             Database::logError('Modi: ' . $e->getMessage());
             $traza .= "\n" . $e->getMessage();
             return false;
+        }
+    }
+
+    // Alta y modificación usan el mismo UPDATE para guardar el PDF binario.
+    private function guardarPdf($nro, $cod, $archivoPdf, &$traza, $mensajeError) {
+        if (!$archivoPdf || !isset($archivoPdf['tmp_name']) || empty($archivoPdf['name'])) return;
+        try {
+            $contenidoPdf = file_get_contents($archivoPdf['tmp_name']);
+            $stmt = $this->pdo->prepare("UPDATE renglones_factura SET documentoPdf=:doc WHERE nro_factura=:nro AND cod_articulo=:cod");
+            $stmt->bindParam(':doc', $contenidoPdf, PDO::PARAM_LOB); // LOB indica contenido binario.
+            $stmt->bindParam(':nro', $nro);
+            $stmt->bindParam(':cod', $cod);
+            $stmt->execute();
+            $traza .= "\nDocumento PDF actualizado correctamente.";
+        } catch (Exception $e) {
+            Database::logError($mensajeError . $e->getMessage());
         }
     }
 
@@ -625,10 +358,8 @@ class RenglonesModel {
         }
 
         try {
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
-
             // DELETE: borra solo el renglón que coincide con los dos datos de la clave.
-            $sql = "DELETE FROM renglones_factura WHERE `{$c['nro']}`=:nroFactura AND `{$c['cod']}`=:codArticulo";
+            $sql = "DELETE FROM renglones_factura WHERE `nro_factura`=:nroFactura AND `cod_articulo`=:codArticulo";
             $stmt = $this->pdo->prepare($sql); // Prepara la consulta SQL; todavía no la ejecuta.
             $traza .= "Preparacion exitosa!\n";
 
@@ -651,17 +382,14 @@ class RenglonesModel {
     public function getPdfBase64($nroFactura, $codArticulo) {
         if (!$this->pdo) return null;
         try {
-            $c = $this->detectarColumnas(); // Obtiene el mapa de nombres reales de la tabla.
-            if (!$c['pdf']) return null;
-
             // SELECT PDF: busca únicamente el binario del renglón elegido.
-            $stmt = $this->pdo->prepare("SELECT `{$c['pdf']}` FROM renglones_factura WHERE `{$c['nro']}` = :nro AND `{$c['cod']}` = :cod");
+            $stmt = $this->pdo->prepare("SELECT `documentoPdf` FROM renglones_factura WHERE `nro_factura` = :nro AND `cod_articulo` = :cod");
             $stmt->bindParam(':nro', $nroFactura);
             $stmt->bindParam(':cod', $codArticulo);
             $stmt->execute(); // Ejecuta el SELECT del archivo PDF.
             $fila = $stmt->fetch(); // Obtiene una sola fila de la respuesta SQL.
-            if ($fila && !empty($fila[$c['pdf']])) {
-                return base64_encode($fila[$c['pdf']]); // Convierte el binario a texto Base64 para poder enviarlo en JSON.
+            if ($fila && !empty($fila['documentoPdf'])) {
+                return base64_encode($fila['documentoPdf']); // Convierte el binario a texto Base64 para poder enviarlo en JSON.
             }
             return null;
         } catch (PDOException $e) {

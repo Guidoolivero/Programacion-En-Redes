@@ -64,8 +64,7 @@ class RenglonesView {
         header('Content-Type: application/json; charset=utf-8');
         // Lee el PDF de MySQL y lo convierte a texto Base64.
         $base64 = $this->model->getPdfBase64($nroFactura, $codArticulo);
-        $obj = new stdClass(); // Crea un objeto vacío para armar la respuesta JSON.
-        $obj->documentoPdf = $base64; // Guarda el PDF en la propiedad que lee mostrarPdf de abm.js.
-        echo json_encode($obj, JSON_INVALID_UTF8_SUBSTITUTE); // Devuelve el objeto con el PDF o null si no hay documento.
+        // Devuelve la propiedad que lee mostrarPdf en abm.js, con el PDF o null.
+        echo json_encode(['documentoPdf' => $base64], JSON_INVALID_UTF8_SUBSTITUTE);
     }
 }
