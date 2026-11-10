@@ -103,6 +103,22 @@ test('Inicio, carga, filtros, orden, limpieza y vaciado conservan sus resultados
   assert.deepEqual(estado.errores, []);
 });
 
+test('Alta muestra ejemplos y restaura el prefijo ART- al abrir el formulario', async t => {
+  const { page, estado } = await abrirApp(t);
+  await page.locator('#btnAlta').click();
+  await expect(page.locator('#formArticulosEntCodArtAlta')).toHaveValue('ART-');
+  const ejemplos = { Nro: 'Ej: 1005', CodArt: 'Ej: ART-04', Descripcion: 'Ej: Cable de red Cat 6', Cantidad: 'Ej: 10', Precio: 'Ej: 1500.00' };
+  for (const [campo, ejemplo] of Object.entries(ejemplos)) {
+    await expect(page.locator('#formArticulosEnt' + campo + 'Alta')).toHaveAttribute('placeholder', ejemplo);
+  }
+  await expect(page.locator('#btEnvioFormAlta')).toBeDisabled();
+  await page.locator('#formArticulosEntCodArtAlta').fill('ART-99');
+  await page.locator('#ventanaModalFormularioAlta .cerrar').click();
+  await page.locator('#btnAlta').click();
+  await expect(page.locator('#formArticulosEntCodArtAlta')).toHaveValue('ART-');
+  assert.deepEqual(estado.errores, []);
+});
+
 test('Alta valida la clave compuesta, admite otra factura y envía el PDF con FormData', async t => {
   const { page, estado } = await abrirApp(t);
   await page.locator('#btnAlta').click();

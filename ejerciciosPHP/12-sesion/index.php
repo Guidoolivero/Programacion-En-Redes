@@ -7,23 +7,24 @@
 // - Si SÍ existe sesión: Ofrece ingresar al módulo protegido (appModulo1) o cerrar sesión.
 // ========================================================================================
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if (session_status() === PHP_SESSION_NONE) { // Comprueba si este pedido todavía no abrió una sesión PHP.
+    session_start(); // Abre o retoma la sesión del navegador mediante su cookie.
 }
 
 // ========================================================================================
 // PASO 1: Evaluar si el usuario ya está autenticado con sesión activa
 // ========================================================================================
+// Comprueba el dato que indica si este usuario ya se autenticó.
 if (!isset($_SESSION['identificativo']) || empty($_SESSION['identificativo'])) {
     // No hay sesión activa -> Redirección obligatoria al formulario de login
-    header('Location: ./formularioDeLogin.html');
-    exit();
+    header('Location: ./formularioDeLogin.html'); // Redirige al navegador a la página indicada.
+    exit(); // Termina este pedido para que no continúe el código de abajo.
 }
 
 // Si llegó aquí, el usuario ya tiene sesión iniciada. Se muestran sus datos y accesos.
-$usuarioActual = $_SESSION['login'] ?? 'Usuario';
-$contadorActual = $_SESSION['ContadorDeSesion'] ?? 1;
-$idSesion = $_SESSION['identificativo'] ?? session_id();
+$usuarioActual = $_SESSION['login'] ?? 'Usuario'; // Lee el usuario para mostrarlo sin volver a autenticar.
+$contadorActual = $_SESSION['ContadorDeSesion'] ?? 1; // Lee los accesos guardados en esta sesión.
+$idSesion = $_SESSION['identificativo'] ?? session_id(); // Lee el identificativo para el recuadro de información.
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -60,11 +61,12 @@ $idSesion = $_SESSION['identificativo'] ?? session_id();
   </div>
 
   <script>
+    // Al hacer clic continúa al módulo del ABM.
     document.getElementById("btContinuar").addEventListener("click", function() {
-      location.href = "./appModulo1/index.php";
+      location.href = "./appModulo1/index.php"; // Le indica al navegador la pantalla que debe abrir.
     });
-    document.getElementById("btSalir").addEventListener("click", function() {
-      location.href = "./appModulo1/destruirsesion.php";
+    document.getElementById("btSalir").addEventListener("click", function() { // Al hacer clic navega al cierre de sesión.
+      location.href = "./appModulo1/destruirsesion.php"; // Le indica al navegador la pantalla que debe abrir.
     });
   </script>
 </body>

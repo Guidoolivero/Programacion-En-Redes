@@ -6,12 +6,12 @@
 // PRIMERA LÍNEA: Protección de sesión con include('../manejoSesion.inc');
 // ========================================================================================
 
-include('../manejoSesion.inc');
+include('../manejoSesion.inc'); // Comprueba la sesión antes de continuar con este pedido.
 
-require_once __DIR__ . '/views/RenglonesView.php';
+require_once __DIR__ . '/views/RenglonesView.php'; // Carga la clase que coordina la petición con el modelo.
 
-$orden = $_POST['orden'] ?? 'nroFactura';
-$filtros = [
+$orden = $_POST['orden'] ?? 'nroFactura'; // Usa el orden recibido o nroFactura como valor inicial.
+$filtros = [ // Agrupa los cinco filtros recibidos para pasarlos al modelo.
     'f_nroFactura'   => $_POST['f_nroFactura'] ?? '',
     'f_codArticulo'  => $_POST['f_codArticulo'] ?? '',
     'f_unidadMedida' => $_POST['f_unidadMedida'] ?? '',
@@ -20,5 +20,5 @@ $filtros = [
 ];
 
 // Delegación a la capa View (MVT)
-$view = new RenglonesView();
-$view->emitirJsonRenglones($filtros, $orden);
+$view = new RenglonesView(); // Crea la vista; su constructor prepara el modelo.
+$view->emitirJsonRenglones($filtros, $orden); // La vista pide al modelo el listado filtrado y ordenado.
