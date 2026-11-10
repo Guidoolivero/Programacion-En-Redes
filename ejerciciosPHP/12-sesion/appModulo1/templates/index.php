@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '/../manejoSesion.inc'; // Protección de sesión antes del template.
+include __DIR__ . '/../../manejoSesion.inc'; // Protección de sesión antes del template.
 ?>
 <!DOCTYPE html>
 <html lang="es">

@@ -17,7 +17,10 @@ test('La carpeta y el HTML pasan por la entrada PHP de sesión', { timeout: 1000
   const reglas = path.join(__dirname, '../ejerciciosPHP/12-sesion/appModulo1/.htaccess');
   if (fs.existsSync(reglas)) fs.copyFileSync(reglas, path.join(app, '.htaccess'));
   const origen = path.dirname(reglas);
-  const htmlEntrada = fs.readFileSync(path.join(origen, 'index.php'), 'utf8');
+  const entrada = fs.readFileSync(path.join(origen, 'index.php'), 'utf8');
+  assert(entrada.includes("templates/index.php"), 'La entrada debe incluir el template');
+  const htmlEntrada = fs.readFileSync(path.join(origen, 'templates/index.php'), 'utf8');
+  assert(htmlEntrada.includes("../../manejoSesion.inc"), 'El template debe llevar la guardia de sesión');
   const recursos = [...htmlEntrada.matchAll(/(?:href|src)="(templates\/[^"?]+)/g)].map(m => m[1]);
   assert.deepEqual(recursos, ['templates/estilo.css', 'templates/abm.js']);
   fs.mkdirSync(path.join(app, 'templates'));

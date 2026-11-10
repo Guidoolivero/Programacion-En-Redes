@@ -35,7 +35,7 @@ async function abrirApp(t) {
     const ruta = url.pathname.substring(1);
     const nombre = path.posix.basename(ruta);
     if (!ruta) {
-      const html = fs.readFileSync(path.join(root, 'index.php'), 'utf8').replace(/^<\?php[\s\S]*?\?>\s*/, '');
+      const html = fs.readFileSync(path.join(root, 'templates/index.php'), 'utf8').replace(/^<\?php[\s\S]*?\?>\s*/, '');
       return route.fulfill({ contentType: 'text/html', body: html });
     }
     if (['templates/abm.js', 'templates/estilo.css'].includes(ruta)) {

@@ -13,6 +13,7 @@ const raiz = fileURLToPath(new URL('../ejerciciosPHP/12-sesion/', import.meta.ur
 php.mkdir('/ej12');
 php.mkdir('/ej12/appModulo1');
 php.mkdir('/ej12/appModulo1/views');
+php.mkdir('/ej12/appModulo1/templates');
 
 const rutas = [
     ['index.php', './formularioDeLogin.html'],
@@ -20,6 +21,7 @@ const rutas = [
     ['descargarErrores.php', './formularioDeLogin.html'],
     ['seedUsuario.php', './formularioDeLogin.html'],
     ['appModulo1/index.php', '/ejerciciosPHP/12-sesion/index.php'],
+    ['appModulo1/templates/index.php', '/ejerciciosPHP/12-sesion/index.php'],
     ['appModulo1/views/alta.php', '/ejerciciosPHP/12-sesion/index.php'],
     ['appModulo1/views/modi.php', '/ejerciciosPHP/12-sesion/index.php'],
     ['appModulo1/views/baja.php', '/ejerciciosPHP/12-sesion/index.php'],
